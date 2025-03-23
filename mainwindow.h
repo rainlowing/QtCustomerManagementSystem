@@ -4,6 +4,9 @@
 #include <QMainWindow>
 #include <QPushButton>
 #include <QMessageBox>
+#include <QSqlTableModel>
+#include <QSqlRelationalTableModel>
+#include <QString>
 
 #include "databasemanager.h"
 #include "logmanager.h"
@@ -26,13 +29,17 @@ public:
 private:
     void connects();
     void initManagers();
+    void setTables();
 
 private slots:
     void onQuitButtonClicked();
 
 private:
-    Ui::MainWindow *ui;
-    DatabaseManager *m_dbManager;
-    LogManager *m_logManager;
+    QString                                         message;
+    Ui::MainWindow                                  *ui;
+    DatabaseManager                                 *m_dbManager;
+    LogManager                                      *m_logManager;
+    QSqlRelationalTableModel                        *m_customerModel;
+    QSqlRelationalTableModel                        *m_consumptionModel;
 };
 #endif // MAINWINDOW_H

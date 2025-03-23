@@ -9,7 +9,7 @@ LogManager::LogManager(QObject *parent)
 
 bool LogManager::initializeLogs() {
     if (!createLogRoot()) {
-        qCritical() << "Failed to initialize LogManager!";
+        qCritical() << "Failed to create log directory!";
         return false;
     }
 

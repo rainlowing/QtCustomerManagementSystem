@@ -1,14 +1,33 @@
 #include "logmanager.h"
+#include "utils.h"
 
-LogManager::LogManager(QObject *parent)
-    : QObject(parent) {
+// 确定日志文件根目录和日志管理器级别，并初始化
+LogManager::LogManager() {
     m_logRoot = QCoreApplication::applicationDirPath() +
                 QDir::separator() + "logs";
-    m_level = Log::Level::DEBUG;
+    m_level = Log::DEBUG;
+    if (!init()) {
+        qCritical() << "Failed to initialize log manager!";
+    }
 }
 
-bool LogManager::initializeLogs() {
-    if (!createLogRoot()) {
+
+// 创建单例
+LogManager &LogManager::getInstance() {
+    static LogManager instance;
+    return instance;
+}
+
+
+// 初始化日志管理器实例：1.创建日志目录；2.创建日志文件指针和流指针
+bool LogManager::init() {
+    QDir logRoot(m_logRoot);
+    bool success = true;
+    for (int i = 0; success && i < QMetaEnum::fromType<Log::Category>().keyCount(); ++i) {
+        success = success && logRoot.mkpath(LogUtils::categoryToString(static_cast<Log::Category>(i)));
+    }
+
+    if (!success) {
         qCritical() << "Failed to create log directory!";
         return false;
     }
@@ -22,14 +41,14 @@ bool LogManager::initializeLogs() {
     return true;
 }
 
-// void LogManager::setLogCategory(Log::Category category) {
-//     m_category = category;
-// }
 
+// 设置日志管理器级别
 void LogManager::setLogLevel(Log::Level level) {
     m_level = level;
 }
 
+
+// 实现日志记录：1.低于管理器级别的不记录；2.确保日志文件以天为单位生成；3.日志内容格式化
 void LogManager::log(Log::Category category, Log::Level level, const QString &message) {
     if (level < m_level) {
         return;
@@ -46,6 +65,8 @@ void LogManager::log(Log::Category category, Log::Level level, const QString &me
     }
 }
 
+
+// 检查是否需要更新日志文件
 void LogManager::updateLogFile(Log::Category category) {
     QFile *file = logFiles[category];
     QString currentDate = QDateTime::currentDateTime().toString("yyyy-MM-dd");
@@ -65,8 +86,8 @@ void LogManager::updateLogFile(Log::Category category) {
     logStreams[category] = nullptr;
 
     file = new QFile(m_logRoot +
-                     "/" + LogUtils::categoryToString(category) +
-                     "/" + LogUtils::generateLogFileName(category));
+                     QDir::separator() + LogUtils::categoryToString(category) +
+                     QDir::separator() + LogUtils::generateLogFileName(category));
     if (file->open(QIODevice::Append | QIODevice::Text)) {
         logFiles[category] = file;
         logStreams[category] = new QTextStream(file);
@@ -78,16 +99,6 @@ void LogManager::updateLogFile(Log::Category category) {
     }
 }
 
-bool LogManager::createLogRoot() {
-    QDir logRoot(m_logRoot);
-    bool success = true;
-
-    for (int i = 0; success && i < QMetaEnum::fromType<Log::Category>().keyCount(); ++i) {
-        success = success && logRoot.mkpath(LogUtils::categoryToString(static_cast<Log::Category>(i)));
-    }
-
-    return success;
-}
 
 LogManager::~LogManager() {
     for (auto stream : logStreams) {

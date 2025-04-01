@@ -6,7 +6,6 @@ MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
     , m_dbManager(new DatabaseManager(this))
-    , m_logManager(new LogManager(this))
 {
     ui->setupUi(this);
 
@@ -17,21 +16,23 @@ MainWindow::MainWindow(QWidget *parent)
 
 void MainWindow::connects() {
     connect(ui->quitButton, &QPushButton::clicked, this, &MainWindow::onQuitButtonClicked);
+    // connect(ui->cp_addButton, &QPushButton::clicked, this, &MainWindow::onCPAddButtonClicked);
+    // connect(ui->cp_updateButton, &QPushButton::clicked, this, &MainWindow::onCPUpdateButtonClicked);
+    // connect(ui->cp_deleteButton, &QPushButton::clicked, this, &MainWindow::onCPDeleteButtonClicked);
+    // connect(ui->cp_searchButton, &QPushButton::clicked, this, &MainWindow::onCPSearchButtonClicked);
+    // connect(ui->ct_addButton, &QPushButton::clicked, this, &MainWindow::onCTAddButtonClicked);
+    // connect(ui->ct_updateButton, &QPushButton::clicked, this, &MainWindow::onCTUpdateButtonClicked);
+    // connect(ui->ct_deleteButton, &QPushButton::clicked, this, &MainWindow::onCTDeleteButtonClicked);
+    // connect(ui->ct_searchButton, &QPushButton::clicked, this, &MainWindow::onCTSearchButtonClicked);
 }
 
+// 初始化管理器
 void MainWindow::initManagers() {
-    if (!m_logManager->initializeLogs()) {
-        m_logManager->log(Log::LOG_APPLICATION, Log::CRITICAL, "初始化日志系统失败...");
+    if (!m_dbManager->initDB()) {
+        LogManager::getInstance().log(Log::APPLICATION, Log::CRITICAL, "数据库连接失败...");
         QCoreApplication::exit(1);
     }
-    m_logManager->log(Log::LOG_APPLICATION, Log::INFO, "日志系统初始化成功。");
-
-    if (!m_dbManager->initializeDataBase(*m_logManager)) {
-        m_logManager->log(Log::LOG_APPLICATION, Log::CRITICAL, "数据库连接失败...");
-        QCoreApplication::exit(1);
-    }
-
-    m_logManager->log(Log::LOG_APPLICATION, Log::INFO, "程序启动。");
+    LogManager::getInstance().log(Log::APPLICATION, Log::INFO, "程序启动。");
 }
 
 void MainWindow::setTables() {
@@ -49,38 +50,261 @@ void MainWindow::setTables() {
         m_customerModel->setHeaderData(6, Qt::Horizontal, "首次消费记录");
         m_customerModel->setHeaderData(7, Qt::Horizontal, "最新消费记录");
         m_customerModel->setHeaderData(8, Qt::Horizontal, "总消费额（元）");
+        m_customerModel->setHeaderData(9, Qt::Horizontal, "备注");
 
         // 设置表格属性：允许排序、自动调整列宽
         ui->customersTableView->setSortingEnabled(true);
         ui->customersTableView->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
     } else {
         message = "顾客信息表无法正常显示（Table cuntomers cannot display correctly: " + m_customerModel->lastError().text() + "）";
-        m_logManager->log(Log::LOG_APPLICATION, Log::ERROR, message);
+        LogManager::getInstance().log(Log::APPLICATION, Log::ERROR, message);
     }
 
     m_consumptionModel = new QSqlRelationalTableModel(this, m_dbManager->getDB());
-    m_consumptionModel->setTable("consumption_records");
-    m_consumptionModel->setRelation(1, QSqlRelation("customers", "id", "name"));
+    m_consumptionModel->setTable("consumptions");
+    m_consumptionModel->setRelation(1, QSqlRelation("customers", "customer_id", "name"));
     if (m_consumptionModel->select()) {
         ui->consumptionTableView->setModel(m_consumptionModel);
+        ui->consumptionTableView->hideColumn(0);
+        ui->consumptionTableView->hideColumn(5);
 
-        m_consumptionModel->setHeaderData(0, Qt::Horizontal, "消费记录ID");
-        m_consumptionModel->setHeaderData(1, Qt::Horizontal, "姓名");
-        m_consumptionModel->setHeaderData(2, Qt::Horizontal, "服务");
-        m_consumptionModel->setHeaderData(3, Qt::Horizontal, "金额（元）");
-        m_consumptionModel->setHeaderData(4, Qt::Horizontal, "记录时间");
+        m_consumptionModel->setHeaderData(1, Qt::Horizontal, "消费记录ID");
+        m_consumptionModel->setHeaderData(2, Qt::Horizontal, "顾客姓名");
+        m_consumptionModel->setHeaderData(3, Qt::Horizontal, "服务");
+        m_consumptionModel->setHeaderData(4, Qt::Horizontal, "金额（元）");
+        m_consumptionModel->setHeaderData(6, Qt::Horizontal, "记录时间");
+        m_consumptionModel->setHeaderData(7, Qt::Horizontal, "备注");
 
         ui->consumptionTableView->setSortingEnabled(true);
         ui->consumptionTableView->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
     } else {
-        message = "消费表无法正常显示（Table consumpton_records cannot display correctly: " + m_consumptionModel->lastError().text() + "）";
-        m_logManager->log(Log::LOG_APPLICATION, Log::ERROR, message);
+        message = "消费表无法正常显示（Table consumptons cannot display correctly: " + m_consumptionModel->lastError().text() + "）";
+        LogManager::getInstance().log(Log::APPLICATION, Log::ERROR, message);
     }
 }
+
 
 void MainWindow::onQuitButtonClicked() {
     QApplication::quit();
 }
+
+// QGroupBox *MainWindow::createCPAddFormGroup() {
+//     QGroupBox *fromGroup = new QGroupBox("记录信息");
+//     QFormLayout *formLayout = new QFormLayout(fromGroup);
+
+//     QLineEdit *idEdit = new QLineEdit();
+//     idEdit->setObjectName("idEdit");
+//     idEdit->setReadOnly(true);
+//     QComboBox *nameCombo = new QComboBox();
+//     nameCombo->setObjectName("nameCombo");
+//     nameCombo->setEditable(true);
+//     QComboBox *serviceCombo = new QComboBox();
+//     serviceCombo->setObjectName("serviceCombo");
+//     serviceCombo->setEditable(true);
+//     QLineEdit *amountEdit = new QLineEdit();
+//     amountEdit->setObjectName("amountEdit");
+//     QLineEdit *timeEdit = new QLineEdit();
+//     timeEdit->setObjectName("timeEdit");
+//     timeEdit->setReadOnly(true);
+
+//     idEdit->setText(autoGenerateCRID());
+//     m_dbManager->selectAllName(nameCombo);
+//     m_dbManager->selectAllService(serviceCombo);
+//     QString currentTime = QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss");
+//     timeEdit->setText(currentTime);
+
+//     formLayout->addRow("消费记录ID", idEdit);
+//     formLayout->addRow("姓名", nameCombo);
+//     formLayout->addRow("服务", serviceCombo);
+//     formLayout->addRow("金额（元）", amountEdit);
+//     formLayout->addRow("记录时间", timeEdit);
+
+//     return fromGroup;
+// }
+
+// QGroupBox *MainWindow::createCPUpdateFormGroup(int currentRow) {
+//     QGroupBox *fromGroup = new QGroupBox("记录信息");
+//     QFormLayout *formLayout = new QFormLayout(fromGroup);
+
+//     QString id = m_consumptionModel->record(currentRow).value(0).toString();
+//     QString name = m_consumptionModel->record(currentRow).value(1).toString();
+//     QString service = m_consumptionModel->record(currentRow).value(2).toString();
+//     QString amount = m_consumptionModel->record(currentRow).value(3).toString();
+//     QString time = m_consumptionModel->record(currentRow).value(4).toString();
+
+//     QLineEdit *idEdit = new QLineEdit();
+//     idEdit->setObjectName("idEdit");
+//     idEdit->setReadOnly(true);
+//     QComboBox *nameCombo = new QComboBox();
+//     nameCombo->setObjectName("nameCombo");
+//     nameCombo->setEditable(true);
+//     QComboBox *serviceCombo = new QComboBox();
+//     serviceCombo->setObjectName("serviceCombo");
+//     serviceCombo->setEditable(true);
+//     QLineEdit *amountEdit = new QLineEdit();
+//     amountEdit->setObjectName("amountEdit");
+//     QLineEdit *timeEdit = new QLineEdit();
+//     timeEdit->setObjectName("timeEdit");
+//     timeEdit->setReadOnly(true);
+
+//     m_dbManager->selectAllName(nameCombo);
+//     m_dbManager->selectAllService(serviceCombo);
+
+//     idEdit->setText(id);
+//     nameCombo->setCurrentText(name);
+//     serviceCombo->setCurrentText(service);
+//     amountEdit->setText(amount);
+//     timeEdit->setText(time);
+
+//     formLayout->addRow("消费记录ID", idEdit);
+//     formLayout->addRow("姓名", nameCombo);
+//     formLayout->addRow("服务", serviceCombo);
+//     formLayout->addRow("金额（元）", amountEdit);
+//     formLayout->addRow("记录时间", timeEdit);
+
+//     return fromGroup;
+
+// }
+
+// QString MainWindow::autoGenerateCRID() {
+//     QString currentDate = QDateTime::currentDateTime().toString("yyyyMMdd");
+//     QString prefix = "CR-" + currentDate + "-";
+//     int nextNumber = 1;
+
+//     QSqlQuery query;
+//     QString sql = QString("SELECT MAX(SUBSTR(consumption_id, LENGTH(consumption_id) - 3, 4)) FROM consumption_records WHERE consumption_id LIKE '%1%'").arg(prefix);
+//     if (query.exec(sql)) {
+//         if (query.next()) {
+//             QString maxStr = query.value(0).toString();
+//             if (!maxStr.isEmpty()) {
+//                 nextNumber = maxStr.toInt() + 1;
+//             }
+//         }
+//     } else {
+//         message = "生成新消费记录 ID 失败（Failed to auto ganerate a new consumption record ID: "
+//                   + query.lastError().text() + "）";
+//         LogManager::getInstance().log(Log::DATABASE, Log::CRITICAL, message);
+//     }
+
+//     QString numStr = QString("%1").arg(nextNumber, 4, 10, QLatin1Char('0'));
+//     return prefix + numStr;
+// }
+
+// bool MainWindow::handleCPAddDialogAccepted(QGroupBox *fromGroup) {
+//     QComboBox *nameCombo = fromGroup->findChild<QComboBox*>("nameCombo");
+//     QLineEdit *amountEdit = fromGroup->findChild<QLineEdit*>("amountEdit");
+
+//     if (nameCombo->currentText().isEmpty() || amountEdit->text().isEmpty()) {
+//         QMessageBox::warning(this, "错误", "姓名或金额不能为空");
+//         return false;
+//     }
+
+//     if (m_dbManager->insertCP(fromGroup)) {
+//         m_consumptionModel->select();
+//         m_customerModel->select();
+//     }
+//     return true;
+// }
+
+// bool MainWindow::handleCPUpdateDialogAccepted(QGroupBox *fromGroup) {
+//     QComboBox *nameCombo = fromGroup->findChild<QComboBox*>("nameCombo");
+//     QLineEdit *amountEdit = fromGroup->findChild<QLineEdit*>("amountEdit");
+
+//     if (nameCombo->currentText().isEmpty() || amountEdit->text().isEmpty()) {
+//         QMessageBox::warning(this, "错误", "姓名或金额不能为空");
+//         return false;
+//     }
+
+//     if (m_dbManager->updateCP(fromGroup)) {
+//         m_consumptionModel->select();
+//         m_customerModel->select();
+//     }
+//     return true;
+// }
+
+
+// void MainWindow::onCPAddButtonClicked() {
+//     QDialog dlg(this);
+//     dlg.setWindowTitle("添加记录");
+//     dlg.setMinimumSize(300, 200);
+
+//     QVBoxLayout *mainLayout = new QVBoxLayout(&dlg);
+//     QGroupBox *formGroup = createCPAddFormGroup();
+//     mainLayout->addWidget(formGroup, 1);
+//     QHBoxLayout *btnLayout = new QHBoxLayout();
+//     QPushButton *btnConfirm = new QPushButton("确认");
+//     QPushButton *btnCancel = new QPushButton("取消");
+//     btnConfirm->setFixedWidth(80);
+//     btnCancel->setFixedWidth(80);
+//     btnLayout->addStretch();
+//     btnLayout->addWidget(btnConfirm);
+//     btnLayout->addWidget(btnCancel);
+//     connect(btnConfirm, &QPushButton::clicked, &dlg, &QDialog::accept);
+//     connect(btnCancel, &QPushButton::clicked, &dlg, &QDialog::reject);
+//     mainLayout->addLayout(btnLayout);
+//     if (dlg.exec() == QDialog::Accepted) {
+//         handleCPAddDialogAccepted(formGroup);
+//     }
+// }
+
+// void MainWindow::onCPSearchButtonClicked()
+// {
+
+// }
+
+// void MainWindow::onCPUpdateButtonClicked() {
+//     int currentRow = ui->consumptionTableView->selectionModel()->currentIndex().row();
+//     if (currentRow < 0)
+//         return;
+
+//     QDialog dlg(this);
+//     dlg.setWindowTitle("修改记录");
+//     dlg.setMinimumSize(300, 200);
+//     QVBoxLayout *mainLayout = new QVBoxLayout(&dlg);
+//     QGroupBox *formGroup = createCPUpdateFormGroup(currentRow);
+//     mainLayout->addWidget(formGroup, 1);
+//     QHBoxLayout *btnLayout = new QHBoxLayout();
+//     QPushButton *btnConfirm = new QPushButton("确认");
+//     QPushButton *btnCancel = new QPushButton("取消");
+//     btnConfirm->setFixedWidth(80);
+//     btnCancel->setFixedWidth(80);
+//     btnLayout->addStretch();
+//     btnLayout->addWidget(btnConfirm);
+//     btnLayout->addWidget(btnCancel);
+//     connect(btnConfirm, &QPushButton::clicked, &dlg, &QDialog::accept);
+//     connect(btnCancel, &QPushButton::clicked, &dlg, &QDialog::reject);
+//     mainLayout->addLayout(btnLayout);
+//     if (dlg.exec() == QDialog::Accepted) {
+//         handleCPUpdateDialogAccepted(formGroup);
+//     }
+
+// }
+
+// void MainWindow::onCPDeleteButtonClicked()
+// {
+
+// }
+
+// void MainWindow::onCTAddButtonClicked()
+// {
+
+// }
+
+// void MainWindow::onCTSearchButtonClicked()
+// {
+
+// }
+
+// void MainWindow::onCTUpdateButtonClicked()
+// {
+
+// }
+
+// void MainWindow::onCTDeleteButtonClicked()
+// {
+
+// }
+
 
 MainWindow::~MainWindow()
 {

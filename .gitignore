@@ -40,7 +40,6 @@ build-*/
 Makefile*
 *.mk
 *.moc
-*.qrc
 *.rcc
 *.tmp
 

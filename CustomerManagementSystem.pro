@@ -10,6 +10,7 @@ CONFIG += c++20
 
 SOURCES += \
     databasemanager.cpp \
+    formdialog.cpp \
     logmanager.cpp \
     main.cpp \
     mainwindow.cpp \
@@ -17,6 +18,7 @@ SOURCES += \
 
 HEADERS += \
     databasemanager.h \
+    formdialog.h \
     logmanager.h \
     mainwindow.h \
     namespace.h \
@@ -29,3 +31,6 @@ FORMS += \
 qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
+
+RESOURCES += \
+    resources.qrc

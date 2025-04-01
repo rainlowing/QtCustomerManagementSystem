@@ -13,22 +13,25 @@
 #include <QMetaEnum>
 #include <QDate>
 
-#include "utils.h"
+#include "namespace.h"
 
 class LogManager : public QObject {
     Q_OBJECT
 
+private:
+    explicit LogManager();
+    bool init();
+    void updateLogFile(Log::Category);
+
 public:
-    explicit LogManager(QObject *parent = nullptr);
     LogManager(const LogManager &) = delete;
     LogManager &operator=(const LogManager &) = delete;
     LogManager(LogManager &&) = delete;
     LogManager &operator=(LogManager &&) = delete;
     ~LogManager();
 
-    bool initializeLogs();
+    static LogManager &getInstance();
 
-    // void setLogCategory(Log::Category c);
     void setLogLevel(Log::Level l);
     void log(Log::Category c, Log::Level l, const QString &m);
 
@@ -38,11 +41,8 @@ private:
     Log::Level                                          m_level;
     QMap<Log::Category, QFile*>                         logFiles;
     QMap<Log::Category, QTextStream*>                   logStreams;
-    // QMap<Log::Category, QString>                        subLogPaths;
     QMutex                                              m_mutex;
 
-    bool createLogRoot();
-    void updateLogFile(Log::Category);
 };
 
 #endif // LOGMANAGER_H

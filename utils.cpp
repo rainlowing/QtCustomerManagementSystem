@@ -9,11 +9,7 @@ QString LogUtils::categoryToString(Log::Category category) {
         return "unknown";
     }
 
-    QString strKey = QString::fromLatin1(key);
-    if (strKey.startsWith("LOG_")) {
-        strKey = strKey.mid(4).toLower();
-    }
-
+    QString strKey = QString::fromLatin1(key).toLower();
     return strKey;
 }
 

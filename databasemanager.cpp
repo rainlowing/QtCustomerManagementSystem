@@ -62,7 +62,7 @@ bool DatabaseManager::selectAllName(QComboBox *combobox) {
 
 bool DatabaseManager::selectAllService(QComboBox *combobox) {
     QSqlQuery query;
-    QString sql = "SELECT service FROM consumption_records";
+    QString sql = "SELECT service FROM consumptions";
 
     if (query.exec(sql)) {
         while (query.next()) {
@@ -75,7 +75,8 @@ bool DatabaseManager::selectAllService(QComboBox *combobox) {
     return true;
 }
 
-QString DatabaseManager::nameToID(const QString &name) {
+
+QString DatabaseManager::isNewCustomer(const QString &name) {
     QString customerID;
 
     QSqlQuery queryB;
@@ -103,35 +104,44 @@ QString DatabaseManager::nameToID(const QString &name) {
     return customerID;
 }
 
-bool DatabaseManager::insertCP(QGroupBox *fromGroup) {
-    QLineEdit *idEdit = fromGroup->findChild<QLineEdit*>("idEdit");
-    QComboBox *nameCombo = fromGroup->findChild<QComboBox*>("nameCombo");
-    QComboBox *serviceCombo = fromGroup->findChild<QComboBox*>("serviceCombo");
-    QLineEdit *amountEdit = fromGroup->findChild<QLineEdit*>("amountEdit");
-    QLineEdit *timeEdit = fromGroup->findChild<QLineEdit*>("timeEdit");
+// 插入一条新消费记录，如果是新顾客则先插入一条简易的新顾客信息
+bool DatabaseManager::insertCP(QVariantMap &data) {
+    QSqlQuery query;
+    query.prepare("SELECT customer_id FROM customers WHERE name = :name");
+    query.bindValue(":name", data["name"]);
+    query.exec();
+    if (query.next()) {
+        data["customer_id"] = query.value("customer_id").toString();
+    } else {
+        query.prepare("INSERT INTO customers (name) VALUES (:name)");
+        query.bindValue(":name", data["name"]);
+        query.exec();
+        query.finish();
 
-    QString customerID = nameToID(nameCombo->currentText());
+        query.prepare("SELECT customer_id FROM customers WHERE name = :name");
+        query.bindValue(":name", data["name"]);
+        query.exec();
+        if (query.next()) {
+            data["customer_id"] = query.value("customer_id").toString();
+        }
+    }
+    query.finish();
 
-    m_db.transaction();
-    QSqlQuery insertSql;
-    insertSql.prepare("INSERT INTO consumption_records "
-                      "(consumption_id, customer_id, service, amount, time) "
-                      "VALUES (?, ?, ?, ?, ?)");
-    insertSql.addBindValue(idEdit->text());
-    insertSql.addBindValue(customerID);
-    insertSql.addBindValue(serviceCombo->currentText());
-    insertSql.addBindValue(amountEdit->text());
-    insertSql.addBindValue(timeEdit->text());
+    query.prepare("INSERT INTO consumptions (customer_id, service, amount, note) VALUES (?, ?, ?, ?)");
+    query.addBindValue(data["customer_id"]);
+    query.addBindValue(data["service"]);
+    query.addBindValue(data["amount"]);
+    query.addBindValue(data["note"]);
 
-    if (!insertSql.exec()) {
-        m_db.rollback();
+    if (!query.exec()) {
         message = "插入新消费记录失败（Failed to insert a new consumption record: " +
-                  insertSql.lastError().text() + "）" +
-                  insertSql.lastQuery();
+                  query.lastError().text() + "）" +
+                  query.lastQuery();
         LogManager::getInstance().log(Log::DATABASE, Log::WARNING, message);
         return false;
     }
-    m_db.commit();
+
+    emit dataChanged();
     return true;
 }
 
@@ -141,11 +151,11 @@ bool DatabaseManager::updateCP(QGroupBox *fromGroup) {
     QComboBox *serviceCombo = fromGroup->findChild<QComboBox*>("serviceCombo");
     QLineEdit *amountEdit = fromGroup->findChild<QLineEdit*>("amountEdit");
 
-    QString customerID = nameToID(nameCombo->currentText());
+    QString customerID;
 
     m_db.transaction();
     QSqlQuery selectSql;
-    selectSql.prepare("SELECT customer_id, service, amount FROM consumption_records WHERE consumption_id = ?");
+    selectSql.prepare("SELECT customer_id, service, amount FROM consumptions WHERE consumption_id = ?");
     selectSql.addBindValue(idEdit->text());
 
     if (!selectSql.exec() || !selectSql.next()){
@@ -256,6 +266,32 @@ bool DatabaseManager::insertCT(const QString &customerID, const QString& name) {
     }
     m_db.commit();
     return true;
+}
+
+
+// 获取下一条新消费记录的 ID，但是不会进行插入
+QString DatabaseManager::getNewConsumptionID() {
+    QString newID;
+
+    QString today = QDate::currentDate().toString("yyyyMMdd");
+    QSqlQuery query;
+    query.prepare("SELECT day, counter FROM consumption_counter WHERE day = :day");
+    query.bindValue(":day", today);
+
+    if (query.exec()) {
+        if (query.next()) {
+            QString counter = QString("%1").arg(query.value("counter").toInt(), 3, 10, QLatin1Char('0'));
+            newID = "OD" + today + counter;
+        } else {
+            newID = "OD" + today + "001";
+        }
+    } else {
+        message = "SQL 查询语句失败（Failed to exec select query: " +
+                  query.lastError().text() + "）" + query.lastQuery();
+        LogManager::getInstance().log(Log::DATABASE, Log::ERROR, message);
+    }
+
+    return newID;
 }
 
 

@@ -1,7 +1,7 @@
 {
     "statements": [
         "CREATE TABLE IF NOT EXISTS consumptions (table_id INTEGER PRIMARY KEY AUTOINCREMENT, consumption_id TEXT UNIQUE, customer_id TEXT NOT NULL, service TEXT, amount DECIMAL(10, 2) NOT NULL CHECK(amount >= 0) DEFAULT 0.00, counter INTEGER DEFAULT 1, time TEXT DEFAULT (datetime('now', 'localtime')), note TEXT);",
-        "CREATE TABLE IF NOT EXISTS customers (table_id INTEGER PRIMARY KEY AUTOINCREMENT, customer_id TEXT UNIQUE, name TEXT NOT NULL, gender TEXT NOT NULL CHECK(gender IN('男', '女', '未知')) DEFAULT '未知', birthday DATE CHECK (birthday IS NULL OR date(birthday) IS NOT NULL), phone TEXT, first_consumption_id TEXT DEFAULT NULL, last_consumption_id TEXT DEFAULT NULL, total_amount DECIMAL(10, 2) NOT NULL CHECK(total_amount >= 0) DEFAULT 0.00, note TEXT);",
+        "CREATE TABLE IF NOT EXISTS customers (table_id INTEGER PRIMARY KEY AUTOINCREMENT, customer_id TEXT UNIQUE, name TEXT NOT NULL UNIQUE, gender TEXT NOT NULL CHECK(gender IN('男', '女', '未知')) DEFAULT '未知', birthday DATE CHECK (birthday IS NULL OR date(birthday) IS NOT NULL), phone TEXT, first_consumption_id TEXT DEFAULT NULL, last_consumption_id TEXT DEFAULT NULL, total_amount DECIMAL(10, 2) NOT NULL CHECK(total_amount >= 0) DEFAULT 0.00, note TEXT);",
         "CREATE TABLE IF NOT EXISTS consumption_counter (day TEXT PRIMARY KEY, counter INTEGER DEFAULT 1);",
         "CREATE VIEW IF NOT EXISTS daily_sales_view AS SELECT date(time) AS day, SUM(amount) AS sales, COUNT(consumption_id) AS consumption_counts FROM consumptions GROUP BY day;",
         "CREATE VIEW IF NOT EXISTS services_view AS SELECT DISTINCT service FROM consumptions WHERE service IS NOT NULL;",

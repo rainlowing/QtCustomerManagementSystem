@@ -15,6 +15,7 @@
 
 #include "databasemanager.h"
 #include "logmanager.h"
+#include "addnewconsumption.h"
 
 
 QT_BEGIN_NAMESPACE
@@ -44,7 +45,7 @@ private:
 
 private slots:
     void onQuitButtonClicked();
-    // void onCPAddButtonClicked();
+    void onCPAddButtonClicked();
     // void onCPSearchButtonClicked();
     // void onCPUpdateButtonClicked();
     // void onCPDeleteButtonClicked();
@@ -52,6 +53,7 @@ private slots:
     // void onCTSearchButtonClicked();
     // void onCTUpdateButtonClicked();
     // void onCTDeleteButtonClicked();
+    void refreshTableView();
 
 private:
     QString                                         message;
@@ -59,5 +61,8 @@ private:
     DatabaseManager                                 *m_dbManager;
     QSqlRelationalTableModel                        *m_customerModel;
     QSqlRelationalTableModel                        *m_consumptionModel;
+
+    // 表单界面指针
+    AddNewConsumption                               *m_addNewConsumption = nullptr;
 };
 #endif // MAINWINDOW_H

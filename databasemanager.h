@@ -13,6 +13,7 @@
 #include <QJsonObject>
 #include <QJsonArray>
 #include <QJsonDocument>
+#include <QVariantMap>
 
 struct TableDefinition {
     int version;
@@ -36,10 +37,17 @@ public:
     QSqlDatabase& getDB();
     bool selectAllName(QComboBox *);
     bool selectAllService(QComboBox *);
-    QString nameToID(const QString &);
-    bool insertCP(QGroupBox *);
+
+
     bool updateCP(QGroupBox *);
     bool insertCT(const QString &, const QString &);
+
+    QString getNewConsumptionID();
+    bool insertCP(QVariantMap &data);
+    QString isNewCustomer(const QString &name);
+
+signals:
+    void dataChanged();
 
 private:
     QString                                     message;

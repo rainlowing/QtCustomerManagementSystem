@@ -9,6 +9,7 @@ CONFIG += c++20
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
+    addnewconsumption.cpp \
     databasemanager.cpp \
     formdialog.cpp \
     logmanager.cpp \
@@ -17,6 +18,7 @@ SOURCES += \
     utils.cpp
 
 HEADERS += \
+    addnewconsumption.h \
     databasemanager.h \
     formdialog.h \
     logmanager.h \
@@ -25,6 +27,7 @@ HEADERS += \
     utils.h
 
 FORMS += \
+    addnewconsumption.ui \
     mainwindow.ui
 
 # Default rules for deployment.

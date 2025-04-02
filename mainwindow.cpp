@@ -17,7 +17,7 @@ MainWindow::MainWindow(QWidget *parent)
 void MainWindow::connects() {
     connect(ui->quitButton, &QPushButton::clicked, this, &MainWindow::onQuitButtonClicked);
     connect(ui->cp_addButton, &QPushButton::clicked, this, &MainWindow::onCPAddButtonClicked);
-    // connect(ui->cp_updateButton, &QPushButton::clicked, this, &MainWindow::onCPUpdateButtonClicked);
+    connect(ui->cp_updateButton, &QPushButton::clicked, this, &MainWindow::onCPUpdateButtonClicked);
     // connect(ui->cp_deleteButton, &QPushButton::clicked, this, &MainWindow::onCPDeleteButtonClicked);
     // connect(ui->cp_searchButton, &QPushButton::clicked, this, &MainWindow::onCPSearchButtonClicked);
     // connect(ui->ct_addButton, &QPushButton::clicked, this, &MainWindow::onCTAddButtonClicked);
@@ -145,6 +145,32 @@ void MainWindow::onCPAddButtonClicked() {
 
     m_addNewConsumption->show();
 }
+
+
+void MainWindow::onCPUpdateButtonClicked() {
+    if (!m_updateConsumption) {
+        m_updateConsumption = new UpdateConsumption(m_dbManager, this);
+    }
+
+    int row = ui->consumptionTableView->selectionModel()->currentIndex().row();
+    if (row == -1) {
+        QMessageBox::information(this, "提示", "请先选中任意一行记录。", QMessageBox::Button::Ok);
+        return;
+    }
+
+    QVariantMap data;
+    data["consumption_id"] = m_consumptionModel->record(row).value(1).toString();
+    data["name"] = m_consumptionModel->record(row).value(2).toString();
+    data["service"] = m_consumptionModel->record(row).value(3).toString();
+    data["amount"] = m_consumptionModel->record(row).value(4).toString();
+    data["time"] = m_consumptionModel->record(row).value(6).toString();
+    data["note"] = m_consumptionModel->record(row).value(7).toString();
+    m_updateConsumption->setBaseInfo(data);
+
+    m_updateConsumption->show();
+}
+
+
 
 void MainWindow::refreshTableView() {
     if (m_customerModel->select()) {

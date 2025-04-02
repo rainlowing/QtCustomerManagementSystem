@@ -44,8 +44,9 @@ QSqlDatabase &DatabaseManager::getDB() {
 }
 
 
-//
+// 获得所有已记录的顾客姓名，并注入到 ComboBox 控件
 bool DatabaseManager::selectAllName(QComboBox *combobox) {
+    combobox->clear();
     QSqlQuery query;
     QString sql = "SELECT name FROM customers";
 
@@ -60,9 +61,12 @@ bool DatabaseManager::selectAllName(QComboBox *combobox) {
     return true;
 }
 
+
+// 获得所有已记录的服务，并注入到 ComboBox 控件
 bool DatabaseManager::selectAllService(QComboBox *combobox) {
+    combobox->clear();
     QSqlQuery query;
-    QString sql = "SELECT service FROM consumptions";
+    QString sql = "SELECT DISTINCT service FROM consumptions";
 
     if (query.exec(sql)) {
         while (query.next()) {
@@ -103,6 +107,21 @@ QString DatabaseManager::isNewCustomer(const QString &name) {
 
     return customerID;
 }
+
+
+// // 根据 consumption_id 查询消费记录
+// QVariantMap DatabaseManager::selectByConsumptionID(const QString &consumption_id) {
+//     QVariantMap data;
+
+//     QSqlQuery query;
+//     query.prepare("SELECT ("") FROM consumptions WHERE consumption_id = :consumption_id");
+//     query.bindValue(":consumption_id", consumption_id);
+//     query.exec();
+//     if (query.next()) {
+
+//     }
+// }
+
 
 // 插入一条新消费记录，如果是新顾客则先插入一条简易的新顾客信息
 bool DatabaseManager::insertCP(QVariantMap &data) {
@@ -145,104 +164,56 @@ bool DatabaseManager::insertCP(QVariantMap &data) {
     return true;
 }
 
-bool DatabaseManager::updateCP(QGroupBox *fromGroup) {
-    QLineEdit *idEdit = fromGroup->findChild<QLineEdit*>("idEdit");
-    QComboBox *nameCombo = fromGroup->findChild<QComboBox*>("nameCombo");
-    QComboBox *serviceCombo = fromGroup->findChild<QComboBox*>("serviceCombo");
-    QLineEdit *amountEdit = fromGroup->findChild<QLineEdit*>("amountEdit");
 
-    QString customerID;
-
-    m_db.transaction();
-    QSqlQuery selectSql;
-    selectSql.prepare("SELECT customer_id, service, amount FROM consumptions WHERE consumption_id = ?");
-    selectSql.addBindValue(idEdit->text());
-
-    if (!selectSql.exec() || !selectSql.next()){
-        message = QString("记录不存在 ID: %1").arg(idEdit->text());
-        LogManager::getInstance().log(Log::DATABASE, Log::WARNING, message);
-        m_db.rollback();
-        return false;
+// 更新一条消费记录：仅更新有变化的字段
+bool DatabaseManager::updateCP(QVariantMap &data) {
+    QSqlQuery query;
+    query.prepare("SELECT customer_id FROM customers WHERE name = :name");
+    query.bindValue(":name", data["name"]);
+    query.exec();
+    if (query.next()) {
+        data["customer_id"] = query.value("customer_id").toString();
     }
+    query.finish();
 
-    const QString origCustomerID = selectSql.value(0).toString();
-    const QString origService = selectSql.value(1).toString();
-    const double origAmount = selectSql.value(2).toDouble();
+    data.remove("name");
+    QVariantMap originData;
+    query.prepare("SELECT consumption_id, customer_id, service, amount, note FROM consumptions WHERE consumption_id = :consumption_id");
+    query.bindValue(":consumption_id", data["consumption_id"]);
+    query.exec();
+    if (query.next()) {
+        originData["consumption_id"] = query.value("consumption_id").toString();
+        originData["customer_id"] = query.value("customer_id").toString();
+        originData["service"] = query.value("service").toString();
+        originData["amount"] = query.value("amount").toString();
+        originData["note"] = query.value("note").toString();
+    }
+    query.finish();
 
     QStringList updateFields;
-    QVariantList bindValues;
-
-    // 检测字段变化
-    if(customerID != origCustomerID){
-        updateFields << "customer_id = ?";
-        bindValues << customerID;
+    QVariantMap updateValues;
+    for(auto key : originData.keys()) {
+        if (originData[key] != data[key]) {
+            updateFields.append(QString("%1 = :%1").arg(key));
+            updateValues[key] = data[key];
+        }
     }
 
-    const QString newService = serviceCombo->currentText().trimmed();
-    if(newService != origService){
-        updateFields << "service = ?";
-        bindValues << newService;
+    query.prepare("UPDATE consumptions SET " + updateFields.join(", ") + " WHERE consumption_id = :consumption_id");
+    query.bindValue(":consumption_id", data["consumption_id"]);
+    for (auto key : updateValues.keys()) {
+        query.bindValue(":" + key, updateValues[key]);
     }
 
-    bool ok;
-    const double newAmount = amountEdit->text().toDouble(&ok);
-    if (!ok){
-        message = "金额格式错误";
+    if (!query.exec()) {
+        message = "更新消费记录失败（Failed to update consumption record: " +
+                  query.lastError().text() + "）" +
+                  query.lastQuery();
         LogManager::getInstance().log(Log::DATABASE, Log::WARNING, message);
-        m_db.rollback();
-        return false;
-    }
-    if(!qFuzzyCompare(newAmount, origAmount)){
-        updateFields << "amount = ?";
-        bindValues << newAmount;
-    }
-
-    // 没有需要更新的字段
-    if(updateFields.isEmpty()){
-        m_db.commit();
-        message = "数据未发生变化";
-        LogManager::getInstance().log(Log::DATABASE, Log::INFO, message);
-        return true;
-    }
-
-    // 构建动态SQL
-    QString updateSql = QString("UPDATE consumption_records SET %1 WHERE consumption_id = ?")
-                            .arg(updateFields.join(", "));
-    bindValues << idEdit->text();
-
-    // 执行更新
-    QSqlQuery updateQuery;
-    updateQuery.prepare(updateSql);
-    for (const QVariant &value : bindValues){
-        updateQuery.addBindValue(value);
-    }
-
-    if (!updateQuery.exec()){
-        message = QString("更新失败: %1").arg(updateQuery.lastError().text());
-        LogManager::getInstance().log(Log::DATABASE, Log::ERROR, message);
-        m_db.rollback();
         return false;
     }
 
-    // 提交事务
-    if (!m_db.commit()){
-        message = "事务提交失败";
-        LogManager::getInstance().log(Log::DATABASE, Log::ERROR, message);
-        m_db.rollback();
-        return false;
-    }
-
-    // 记录变更日志
-    QStringList changes;
-    if (customerID != origCustomerID) changes << QString("顾客 ID: %1 → %2").arg(origCustomerID).arg(customerID);
-    if (newService != origService) changes << QString("服务: %1 → %2").arg(origService).arg(newService);
-    if (!qFuzzyCompare(newAmount, origAmount)) changes << QString("金额: %1 → %2").arg(origAmount).arg(newAmount);
-
-    LogManager::getInstance().log(Log::DATABASE, Log::INFO,
-                   QString("记录更新成功 ID: %1\n变更明细:\n%2")
-                       .arg(idEdit->text())
-                       .arg(changes.join("\n")));
-
+    emit dataChanged();
     return true;
 }
 

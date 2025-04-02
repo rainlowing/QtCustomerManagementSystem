@@ -39,12 +39,12 @@ public:
     bool selectAllService(QComboBox *);
 
 
-    bool updateCP(QGroupBox *);
     bool insertCT(const QString &, const QString &);
 
     QString getNewConsumptionID();
     bool insertCP(QVariantMap &data);
     QString isNewCustomer(const QString &name);
+    bool updateCP(QVariantMap &data);
 
 signals:
     void dataChanged();

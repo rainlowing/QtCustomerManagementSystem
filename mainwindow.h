@@ -12,10 +12,12 @@
 #include <QFormLayout>
 #include <QLineEdit>
 #include <QComboBox>
+#include <QVariantMap>
 
 #include "databasemanager.h"
 #include "logmanager.h"
 #include "addnewconsumption.h"
+#include "updateconsumption.h"
 
 
 QT_BEGIN_NAMESPACE
@@ -38,14 +40,11 @@ private:
     void setTables();
     QGroupBox *createCPAddFormGroup();
     QGroupBox *createCPUpdateFormGroup(int cr);
-    QString autoGenerateCRID();
-    bool handleCPAddDialogAccepted(QGroupBox *gb);
-    bool handleCPSearchDialogAccepted(QGroupBox *gb);
-    bool handleCPUpdateDialogAccepted(QGroupBox *gb);
 
 private slots:
     void onQuitButtonClicked();
     void onCPAddButtonClicked();
+    void onCPUpdateButtonClicked();
     // void onCPSearchButtonClicked();
     // void onCPUpdateButtonClicked();
     // void onCPDeleteButtonClicked();
@@ -64,5 +63,6 @@ private:
 
     // 表单界面指针
     AddNewConsumption                               *m_addNewConsumption = nullptr;
+    UpdateConsumption                               *m_updateConsumption = nullptr;
 };
 #endif // MAINWINDOW_H

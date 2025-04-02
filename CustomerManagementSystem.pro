@@ -15,6 +15,8 @@ SOURCES += \
     logmanager.cpp \
     main.cpp \
     mainwindow.cpp \
+    searchcomsumptions.cpp \
+    updateconsumption.cpp \
     utils.cpp
 
 HEADERS += \
@@ -24,11 +26,15 @@ HEADERS += \
     logmanager.h \
     mainwindow.h \
     namespace.h \
+    searchcomsumptions.h \
+    updateconsumption.h \
     utils.h
 
 FORMS += \
     addnewconsumption.ui \
-    mainwindow.ui
+    mainwindow.ui \
+    searchcomsumptions.ui \
+    updateconsumption.ui
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin

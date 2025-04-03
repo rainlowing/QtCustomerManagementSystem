@@ -109,7 +109,7 @@
           <item>
            <widget class="QPushButton" name="cp_searchButton">
             <property name="text">
-             <string>查询</string>
+             <string>搜索</string>
             </property>
            </widget>
           </item>
@@ -207,17 +207,7 @@
     </item>
    </layout>
   </widget>
-  <widget class="QToolBar" name="messageBar">
-   <property name="windowTitle">
-    <string>toolBar</string>
-   </property>
-   <attribute name="toolBarArea">
-    <enum>BottomToolBarArea</enum>
-   </attribute>
-   <attribute name="toolBarBreak">
-    <bool>false</bool>
-   </attribute>
-  </widget>
+  <widget class="QStatusBar" name="statusBar"/>
  </widget>
  <resources/>
  <connections/>

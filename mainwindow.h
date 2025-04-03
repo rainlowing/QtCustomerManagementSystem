@@ -13,12 +13,14 @@
 #include <QLineEdit>
 #include <QComboBox>
 #include <QVariantMap>
+#include <QLabel>
+#include <QTimer>
 
 #include "databasemanager.h"
 #include "logmanager.h"
 #include "addnewconsumption.h"
 #include "updateconsumption.h"
-
+#include "searchcomsumption.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -37,22 +39,27 @@ public:
 private:
     void connects();
     void initManagers();
+    void initTimer();
     void setTables();
-    QGroupBox *createCPAddFormGroup();
-    QGroupBox *createCPUpdateFormGroup(int cr);
+    void closeAllCPFrom();
 
 private slots:
     void onQuitButtonClicked();
+
+    void updateTimer();
+
     void onCPAddButtonClicked();
+    void handleCodeFromAddConsumption(int code);
+
     void onCPUpdateButtonClicked();
-    // void onCPSearchButtonClicked();
-    // void onCPUpdateButtonClicked();
-    // void onCPDeleteButtonClicked();
-    // void onCTAddButtonClicked();
-    // void onCTSearchButtonClicked();
-    // void onCTUpdateButtonClicked();
-    // void onCTDeleteButtonClicked();
-    void refreshTableView();
+    void handleCodeFromUpdateConsumption(int code);
+
+    void onCPSearchButtonClicked();
+    void handleCodeFromSearchConsumption(int code);
+
+    void selectConsumption(const QString &condition);
+    void refreshConsumptionTableView();
+    void refreshCustomerTableView();
 
 private:
     QString                                         message;
@@ -61,8 +68,12 @@ private:
     QSqlRelationalTableModel                        *m_customerModel;
     QSqlRelationalTableModel                        *m_consumptionModel;
 
+    QLabel                                          *m_timeLabel;
+    QTimer                                          *m_timer;
+
     // 表单界面指针
     AddNewConsumption                               *m_addNewConsumption = nullptr;
     UpdateConsumption                               *m_updateConsumption = nullptr;
+    SearchComsumption                               *m_SearchConsumption = nullptr;
 };
 #endif // MAINWINDOW_H

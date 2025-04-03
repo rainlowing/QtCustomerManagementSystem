@@ -15,7 +15,7 @@ SOURCES += \
     logmanager.cpp \
     main.cpp \
     mainwindow.cpp \
-    searchcomsumptions.cpp \
+    searchcomsumption.cpp \
     updateconsumption.cpp \
     utils.cpp
 
@@ -26,14 +26,14 @@ HEADERS += \
     logmanager.h \
     mainwindow.h \
     namespace.h \
-    searchcomsumptions.h \
+    searchcomsumption.h \
     updateconsumption.h \
     utils.h
 
 FORMS += \
     addnewconsumption.ui \
     mainwindow.ui \
-    searchcomsumptions.ui \
+    searchcomsumption.ui \
     updateconsumption.ui
 
 # Default rules for deployment.

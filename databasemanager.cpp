@@ -160,7 +160,8 @@ bool DatabaseManager::insertCP(QVariantMap &data) {
         return false;
     }
 
-    emit dataChanged();
+    emit consumptionDataChanged();
+    emit customerDataChanged();
     return true;
 }
 
@@ -175,8 +176,8 @@ bool DatabaseManager::updateCP(QVariantMap &data) {
         data["customer_id"] = query.value("customer_id").toString();
     }
     query.finish();
-
     data.remove("name");
+
     QVariantMap originData;
     query.prepare("SELECT consumption_id, customer_id, service, amount, note FROM consumptions WHERE consumption_id = :consumption_id");
     query.bindValue(":consumption_id", data["consumption_id"]);
@@ -213,9 +214,11 @@ bool DatabaseManager::updateCP(QVariantMap &data) {
         return false;
     }
 
-    emit dataChanged();
+    emit consumptionDataChanged();
+    emit customerDataChanged();
     return true;
 }
+
 
 bool DatabaseManager::insertCT(const QString &customerID, const QString& name) {
     m_db.transaction();

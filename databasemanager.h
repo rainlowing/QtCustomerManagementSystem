@@ -14,6 +14,7 @@
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QVariantMap>
+#include <QSqlRecord>
 
 struct TableDefinition {
     int version;
@@ -38,7 +39,6 @@ public:
     bool selectAllName(QComboBox *);
     bool selectAllService(QComboBox *);
 
-
     bool insertCT(const QString &, const QString &);
 
     QString getNewConsumptionID();
@@ -47,7 +47,8 @@ public:
     bool updateCP(QVariantMap &data);
 
 signals:
-    void dataChanged();
+    void consumptionDataChanged();
+    void customerDataChanged();
 
 private:
     QString                                     message;

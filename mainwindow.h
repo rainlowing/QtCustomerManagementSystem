@@ -15,6 +15,11 @@
 #include <QVariantMap>
 #include <QLabel>
 #include <QTimer>
+#include <QTableView>
+#include <QFileDialog>
+
+#include <QXlsx/header/xlsxdocument.h>
+#include <QXlsx/header/xlsxformat.h>
 
 #include "databasemanager.h"
 #include "logmanager.h"
@@ -59,9 +64,14 @@ private slots:
 
     void onCPDeleteButtonClicked();
 
+    void onCPExportButtonClicked();
+
+    void onCTExportButtonClicked();
+
     void selectConsumption(const QString &condition);
     void refreshConsumptionTableView();
     void refreshCustomerTableView();
+    void exportToExcel(QTableView *tableView, const QString &filePath);
 
 private:
     QString                                         message;

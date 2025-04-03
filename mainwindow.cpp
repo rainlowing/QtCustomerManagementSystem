@@ -25,6 +25,8 @@ void MainWindow::connects() {
     connect(ui->cp_searchButton, &QPushButton::clicked, this, &MainWindow::onCPSearchButtonClicked);
 
     connect(ui->cp_deleteButton, &QPushButton::clicked, this, &MainWindow::onCPDeleteButtonClicked);
+
+    connect(ui->cp_exportButton, &QPushButton::clicked, this, &MainWindow::onCPExportButtonClicked);
     // connect(ui->cp_deleteButton, &QPushButton::clicked, this, &MainWindow::onCPDeleteButtonClicked);
     // connect(ui->cp_searchButton, &QPushButton::clicked, this, &MainWindow::onCPSearchButtonClicked);
     // connect(ui->ct_addButton, &QPushButton::clicked, this, &MainWindow::onCTAddButtonClicked);
@@ -219,6 +221,74 @@ void MainWindow::onCPDeleteButtonClicked() {
     }
 
     ui->statusBar->showMessage("[删除消费记录失败] 无法删除改行记录");
+}
+
+void MainWindow::onCPExportButtonClicked() {
+    QString fileName = QFileDialog::getSaveFileName(this,
+                                                    tr("保存文件"),
+                                                    "",
+                                                    tr("Excel 文件 (*.xlsx);;所有文件 (*.*)"));
+    if (!fileName.isEmpty()) {
+        exportToExcel(ui->consumptionTableView, fileName);
+        ui->statusBar->showMessage("[导出为 Excel 文件成功] 保存路径为：" + fileName);
+    } else {
+        ui->statusBar->showMessage("[导出为 Excel 文件失败] 没有选择保存路径", 5000);
+    }
+}
+
+void MainWindow::onCTExportButtonClicked() {
+    QString fileName = QFileDialog::getSaveFileName(this,
+                                                    tr("保存文件"),
+                                                    "",
+                                                    tr("Excel 文件 (*.xlsx);;所有文件 (*.*)"));
+    if (!fileName.isEmpty()) {
+        exportToExcel(ui->customersTableView, fileName);
+        ui->statusBar->showMessage("[导出为 Excel 文件成功] 保存路径为：" + fileName);
+    } else {
+        ui->statusBar->showMessage("[导出为 Excel 文件失败] 没有选择保存路径", 5000);
+    }
+}
+
+void MainWindow::exportToExcel(QTableView *tableView, const QString &filePath) {
+    QXlsx::Document xlsx;
+
+    QXlsx::Format headerFormat;
+    headerFormat.setFontBold(true);
+    headerFormat.setFontSize(12);
+    headerFormat.setBorderStyle(QXlsx::Format::BorderThin);
+
+    // ==== 写入表头 ====
+    QAbstractItemModel *model = tableView->model();
+    for (int col = 0; col < model->columnCount(); ++col) {
+        QString header = model->headerData(col, Qt::Horizontal).toString();
+        xlsx.write(1, col + 1, header, headerFormat);
+    }
+
+    // ==== 写入数据 ====
+    QXlsx::Format dataFormat;
+    dataFormat.setBorderStyle(QXlsx::Format::BorderThin);
+
+    for (int row = 0; row < model->rowCount(); ++row) {
+        for (int col = 0; col < model->columnCount(); ++col) {
+            QModelIndex index = model->index(row, col);
+            QVariant data = model->data(index);
+
+            // 处理特殊数据类型（如日期）
+            if (data.type() == QVariant::DateTime) {
+                xlsx.write(row + 2, col + 1, data.toDateTime(), dataFormat);
+            } else {
+                xlsx.write(row + 2, col + 1, data.toString(), dataFormat);
+            }
+        }
+    }
+
+    // ==== 自动调整列宽 ====
+    for (int col = 0; col < model->columnCount(); ++col) {
+        xlsx.setColumnWidth(col + 1, tableView->columnWidth(col) / 7); // 像素转Excel列宽单位
+    }
+
+    // ==== 保存文件 ====
+    xlsx.saveAs(filePath);
 }
 
 

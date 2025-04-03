@@ -11,7 +11,6 @@ CONFIG += c++20
 SOURCES += \
     addnewconsumption.cpp \
     databasemanager.cpp \
-    formdialog.cpp \
     logmanager.cpp \
     main.cpp \
     mainwindow.cpp \
@@ -22,7 +21,6 @@ SOURCES += \
 HEADERS += \
     addnewconsumption.h \
     databasemanager.h \
-    formdialog.h \
     logmanager.h \
     mainwindow.h \
     namespace.h \

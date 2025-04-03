@@ -57,6 +57,8 @@ private slots:
     void onCPSearchButtonClicked();
     void handleCodeFromSearchConsumption(int code);
 
+    void onCPDeleteButtonClicked();
+
     void selectConsumption(const QString &condition);
     void refreshConsumptionTableView();
     void refreshCustomerTableView();

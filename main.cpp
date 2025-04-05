@@ -11,6 +11,8 @@ int main(int argc, char *argv[])
     QIcon icon(":/Iconshock-Vista-General-House.ico");
     a.setWindowIcon(icon);
     MainWindow w;
+    w.setWindowIcon(icon);
+    w.setWindowTitle("管理系统");
     w.show();
     return a.exec();
 }

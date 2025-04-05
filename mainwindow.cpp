@@ -11,7 +11,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     initManagers();
     initTimer();
-    setTables();
+    setTableViews();
     connects();
 }
 
@@ -64,7 +64,7 @@ void MainWindow::initTimer() {
 }
 
 
-void MainWindow::setTables() {
+void MainWindow::setTableViews() {
     m_customerModel = new QSqlRelationalTableModel(this, m_dbManager->getDB());
     m_customerModel->setTable("customers");
 
@@ -506,6 +506,11 @@ void MainWindow::refreshConsumptionTableView() {
         m_consumptionModel->setHeaderData(6, Qt::Horizontal, "记录时间");
         m_consumptionModel->setHeaderData(7, Qt::Horizontal, "备注");
 
+        ui->consumptionTableView->setItemDelegateForColumn(1, new ReadOnlyDelegate());
+        ui->consumptionTableView->setItemDelegateForColumn(2, new ReadOnlyDelegate());
+        ui->consumptionTableView->setItemDelegateForColumn(4, new ReadOnlyDelegate());
+        ui->consumptionTableView->setItemDelegateForColumn(6, new ReadOnlyDelegate());
+
         ui->consumptionTableView->setSortingEnabled(true);
         ui->consumptionTableView->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
     } else {
@@ -530,6 +535,13 @@ void MainWindow::refreshCustomerTableView() {
         m_customerModel->setHeaderData(8, Qt::Horizontal, "总消费额（元）");
         m_customerModel->setHeaderData(9, Qt::Horizontal, "备注");
 
+        ui->customersTableView->setItemDelegateForColumn(1, new ReadOnlyDelegate());
+        ui->customersTableView->setItemDelegateForColumn(2, new ReadOnlyDelegate());
+        ui->customersTableView->setItemDelegateForColumn(3, new ReadOnlyDelegate());
+        ui->customersTableView->setItemDelegateForColumn(6, new ReadOnlyDelegate());
+        ui->customersTableView->setItemDelegateForColumn(7, new ReadOnlyDelegate());
+        ui->customersTableView->setItemDelegateForColumn(8, new ReadOnlyDelegate());
+
         ui->customersTableView->setSortingEnabled(true);
         ui->customersTableView->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
     } else {
@@ -545,6 +557,10 @@ void MainWindow::refreshDailyTableView() {
         m_dailyModel->setHeaderData(0, Qt::Horizontal, "日期");
         m_dailyModel->setHeaderData(1, Qt::Horizontal, "经营额（元）");
         m_dailyModel->setHeaderData(2, Qt::Horizontal, "完成消费次数");
+
+        ui->dailyTableView->setItemDelegateForColumn(0, new ReadOnlyDelegate());
+        ui->dailyTableView->setItemDelegateForColumn(1, new ReadOnlyDelegate());
+        ui->dailyTableView->setItemDelegateForColumn(2, new ReadOnlyDelegate());
 
         ui->dailyTableView->setSortingEnabled(true);
         ui->dailyTableView->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);

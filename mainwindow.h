@@ -19,6 +19,8 @@
 #include <QTableView>
 #include <QFileDialog>
 #include <QItemSelectionModel>
+#include <QStandardItem>
+#include <QStyledItemDelegate>
 
 #include <QXlsx/header/xlsxdocument.h>
 #include <QXlsx/header/xlsxformat.h>
@@ -38,6 +40,15 @@ class MainWindow;
 }
 QT_END_NAMESPACE
 
+class ReadOnlyDelegate : public QStyledItemDelegate {
+public:
+    QWidget* createEditor(QWidget *parent,
+                          const QStyleOptionViewItem &option,
+                          const QModelIndex &index) const override {
+        return nullptr; // 阻止编辑器创建
+    }
+};
+
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
@@ -50,7 +61,7 @@ private:
     void connects();
     void initManagers();
     void initTimer();
-    void setTables();
+    void setTableViews();
     void closeAllCPForm();
     void closeAllCTForm();
     void refreshAllTableViews();

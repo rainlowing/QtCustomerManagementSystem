@@ -1,3 +1,5 @@
+VERSION = 2.0.1
+
 QT       += core gui sql
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets

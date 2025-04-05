@@ -74,7 +74,7 @@
     <item row="1" column="0">
      <widget class="QTabWidget" name="tabWidget">
       <property name="currentIndex">
-       <number>0</number>
+       <number>2</number>
       </property>
       <property name="movable">
        <bool>true</bool>
@@ -227,14 +227,7 @@
            </spacer>
           </item>
           <item>
-           <widget class="QPushButton" name="da_searchButton">
-            <property name="text">
-             <string>查询</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QPushButton" name="pushButton">
+           <widget class="QPushButton" name="da_exportButton">
             <property name="text">
              <string>导出为 Excel</string>
             </property>

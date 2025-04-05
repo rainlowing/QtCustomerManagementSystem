@@ -7,25 +7,25 @@
     <x>0</x>
     <y>0</y>
     <width>400</width>
-    <height>270</height>
+    <height>280</height>
    </rect>
   </property>
   <property name="minimumSize">
    <size>
     <width>0</width>
-    <height>270</height>
+    <height>280</height>
    </size>
   </property>
   <property name="maximumSize">
    <size>
     <width>16777215</width>
-    <height>300</height>
+    <height>280</height>
    </size>
   </property>
   <property name="windowTitle">
    <string>Dialog</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout">
+  <layout class="QVBoxLayout" name="verticalLayout" stretch="1,0">
    <item>
     <widget class="QGroupBox" name="groupBox">
      <property name="sizePolicy">
@@ -38,6 +38,12 @@
       <string>筛选条件</string>
      </property>
      <layout class="QFormLayout" name="formLayout">
+      <property name="horizontalSpacing">
+       <number>20</number>
+      </property>
+      <property name="verticalSpacing">
+       <number>10</number>
+      </property>
       <item row="0" column="0">
        <widget class="QLabel" name="label_3">
         <property name="text">
@@ -91,6 +97,16 @@
         <property name="topMargin">
          <number>4</number>
         </property>
+        <item row="0" column="0">
+         <widget class="QCheckBox" name="amountCheck">
+          <property name="text">
+           <string>不限</string>
+          </property>
+          <property name="checked">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
         <item row="1" column="0">
          <widget class="QCheckBox" name="greaterCheck">
           <property name="enabled">
@@ -114,7 +130,7 @@
           </property>
          </widget>
         </item>
-        <item row="4" column="0">
+        <item row="2" column="0">
          <widget class="QCheckBox" name="lessCheck">
           <property name="enabled">
            <bool>false</bool>
@@ -127,7 +143,7 @@
           </property>
          </widget>
         </item>
-        <item row="4" column="1">
+        <item row="2" column="1">
          <widget class="QLineEdit" name="lessEdit">
           <property name="enabled">
            <bool>false</bool>
@@ -136,16 +152,6 @@
            <string>99999999.99</string>
           </property>
           <property name="readOnly">
-           <bool>true</bool>
-          </property>
-         </widget>
-        </item>
-        <item row="0" column="0">
-         <widget class="QCheckBox" name="amountCheck">
-          <property name="text">
-           <string>不限</string>
-          </property>
-          <property name="checked">
            <bool>true</bool>
           </property>
          </widget>
@@ -248,7 +254,7 @@
             <second>0</second>
             <year>2099</year>
             <month>12</month>
-            <day>27</day>
+            <day>25</day>
            </datetime>
           </property>
           <property name="maximumDate">
@@ -329,19 +335,6 @@
       <enum>QLayout::SizeConstraint::SetDefaultConstraint</enum>
      </property>
      <item>
-      <spacer name="horizontalSpacer">
-       <property name="orientation">
-        <enum>Qt::Orientation::Horizontal</enum>
-       </property>
-       <property name="sizeHint" stdset="0">
-        <size>
-         <width>40</width>
-         <height>20</height>
-        </size>
-       </property>
-      </spacer>
-     </item>
-     <item>
       <widget class="QPushButton" name="btnConfirm">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
@@ -352,13 +345,13 @@
        <property name="minimumSize">
         <size>
          <width>80</width>
-         <height>0</height>
+         <height>25</height>
         </size>
        </property>
        <property name="maximumSize">
         <size>
          <width>80</width>
-         <height>20</height>
+         <height>25</height>
         </size>
        </property>
        <property name="text">
@@ -377,13 +370,13 @@
        <property name="minimumSize">
         <size>
          <width>80</width>
-         <height>0</height>
+         <height>25</height>
         </size>
        </property>
        <property name="maximumSize">
         <size>
          <width>80</width>
-         <height>20</height>
+         <height>25</height>
         </size>
        </property>
        <property name="text">
@@ -402,19 +395,32 @@
        <property name="minimumSize">
         <size>
          <width>80</width>
-         <height>0</height>
+         <height>25</height>
         </size>
        </property>
        <property name="maximumSize">
         <size>
          <width>80</width>
-         <height>20</height>
+         <height>25</height>
         </size>
        </property>
        <property name="text">
         <string>取消</string>
        </property>
       </widget>
+     </item>
+     <item>
+      <spacer name="horizontalSpacer">
+       <property name="orientation">
+        <enum>Qt::Orientation::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
      </item>
     </layout>
    </item>

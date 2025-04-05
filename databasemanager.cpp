@@ -184,8 +184,7 @@ bool DatabaseManager::insertCP(QVariantMap &data) {
         return false;
     }
 
-    emit consumptionDataChanged();
-    emit customerDataChanged();
+    emit dataChanged();
     return true;
 }
 
@@ -238,8 +237,7 @@ bool DatabaseManager::updateCP(QVariantMap &data) {
         return false;
     }
 
-    emit consumptionDataChanged();
-    emit customerDataChanged();
+    emit dataChanged();
     return true;
 }
 
@@ -269,7 +267,7 @@ bool DatabaseManager::insertCT(QVariantMap &data) {
         return false;
     }
 
-    emit customerDataChanged();
+    emit dataChanged();
     return true;
 }
 
@@ -335,8 +333,7 @@ bool DatabaseManager::updateCT(QVariantMap &data) {
         return false;
     }
 
-    emit consumptionDataChanged();
-    emit customerDataChanged();
+    emit dataChanged();
     return true;
 }
 

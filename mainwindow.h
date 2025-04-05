@@ -1,6 +1,7 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+#include <QCoreApplication>
 #include <QMainWindow>
 #include <QPushButton>
 #include <QMessageBox>
@@ -17,6 +18,7 @@
 #include <QTimer>
 #include <QTableView>
 #include <QFileDialog>
+#include <QItemSelectionModel>
 
 #include <QXlsx/header/xlsxdocument.h>
 #include <QXlsx/header/xlsxformat.h>
@@ -51,6 +53,7 @@ private:
     void setTables();
     void closeAllCPForm();
     void closeAllCTForm();
+    void refreshAllTableViews();
 
 private slots:
     void onQuitButtonClicked();
@@ -83,11 +86,18 @@ private slots:
 
     void onCTExportButtonClicked();
 
+    // void onDASearchButtonClicked();
+
+    void onDAExportButtonClicked();
+
     void selectConsumption(const QString &condition);
     void selectCustomer(const QString &condition);
     void refreshConsumptionTableView();
     void refreshCustomerTableView();
+    void refreshDailyTableView();
     void exportToExcel(QTableView *tableView, const QString &filePath);
+
+    void dailySalesSum();
 
 private:
     QString                                         message;
@@ -95,6 +105,7 @@ private:
     DatabaseManager                                 *m_dbManager;
     QSqlRelationalTableModel                        *m_customerModel;
     QSqlRelationalTableModel                        *m_consumptionModel;
+    QSqlRelationalTableModel                        *m_dailyModel;
 
     QLabel                                          *m_timeLabel;
     QTimer                                          *m_timer;

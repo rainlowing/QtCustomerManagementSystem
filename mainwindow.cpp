@@ -9,10 +9,10 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
 
-    connects();
     initManagers();
     initTimer();
     setTables();
+    connects();
 }
 
 void MainWindow::connects() {
@@ -36,8 +36,9 @@ void MainWindow::connects() {
 
     connect(ui->ct_deleteButton, &QPushButton::clicked, this, &MainWindow::onCTDeleteButtonClicked);
 
-    connect(m_dbManager, &DatabaseManager::consumptionDataChanged, this, &MainWindow::refreshConsumptionTableView);
-    connect(m_dbManager, &DatabaseManager::customerDataChanged, this, &MainWindow::refreshCustomerTableView);
+    connect(m_dbManager, &DatabaseManager::dataChanged, this, &MainWindow::refreshAllTableViews);
+
+    connect(ui->dailyTableView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &MainWindow::dailySalesSum);
 }
 
 // 初始化管理器
@@ -45,7 +46,7 @@ void MainWindow::initManagers() {
     if (!m_dbManager->initDB()) {
         LogManager::getInstance().log(Log::APPLICATION, Log::CRITICAL, "数据库连接失败...");
         QMessageBox::warning(this, "程序错误", "数据库无法正确连接。", QMessageBox::Button::Ok);
-        QCoreApplication::exit(1);
+        QCoreApplication::quit();
     }
     LogManager::getInstance().log(Log::APPLICATION, Log::INFO, "程序启动。");
 }
@@ -60,7 +61,6 @@ void MainWindow::initTimer() {
     m_timer->start(1000);
 
     updateTimer();
-
 }
 
 
@@ -72,8 +72,10 @@ void MainWindow::setTables() {
     m_consumptionModel->setTable("consumptions");
     m_consumptionModel->setRelation(2, QSqlRelation("customers", "customer_id", "name"));
 
-    refreshConsumptionTableView();
-    refreshCustomerTableView();
+    m_dailyModel = new QSqlRelationalTableModel(this, m_dbManager->getDB());
+    m_dailyModel->setTable("daily_sales_view");
+
+    refreshAllTableViews();
 }
 
 
@@ -86,6 +88,13 @@ void MainWindow::closeAllCPForm() {
 void MainWindow::closeAllCTForm() {
     if (m_addNewCustomer) m_addNewCustomer->close();
     if (m_searchCustomer) m_searchCustomer->close();
+    if (m_updateCustomer) m_updateCustomer->close();
+}
+
+void MainWindow::refreshAllTableViews() {
+    refreshConsumptionTableView();
+    refreshCustomerTableView();
+    refreshDailyTableView();
 }
 
 
@@ -218,8 +227,7 @@ void MainWindow::onCPDeleteButtonClicked() {
 
     if (m_consumptionModel->removeRow(row)) {
         if (m_consumptionModel->submitAll()) {
-            refreshConsumptionTableView();
-            refreshCustomerTableView();
+            refreshAllTableViews();
             ui->statusBar->showMessage("[删除消费记录成功] 已删除该行消费记录并刷新");
         } else {
             ui->statusBar->showMessage("[删除消费记录失败] 提交删除失败");
@@ -231,6 +239,8 @@ void MainWindow::onCPDeleteButtonClicked() {
     }
 
     ui->statusBar->showMessage("[删除消费记录失败] 无法删除该行记录");
+    message = "提交删除失败（Failed to delete consumption record: " + m_consumptionModel->lastError().text() + "）";
+    LogManager::getInstance().log(Log::DATABASE, Log::WARNING, message);
 }
 
 void MainWindow::onCPExportButtonClicked() {
@@ -362,12 +372,11 @@ void MainWindow::onCTDeleteButtonClicked() {
 
     if (m_customerModel->removeRow(row)) {
         if (m_customerModel->submitAll()) {
-            refreshConsumptionTableView();
-            refreshCustomerTableView();
+            refreshAllTableViews();
             ui->statusBar->showMessage("[删除顾客信息成功] 已删除该行顾客信息并刷新");
         } else {
             ui->statusBar->showMessage("[删除顾客信息失败] 提交删除失败");
-            message = "提交删除失败（Failed to delete consumption record: " + m_customerModel->lastError().text() + "）";
+            message = "提交删除失败（Failed to delete customer record: " + m_customerModel->lastError().text() + "）";
             LogManager::getInstance().log(Log::DATABASE, Log::WARNING, message);
             m_customerModel->revertAll();
         }
@@ -375,6 +384,8 @@ void MainWindow::onCTDeleteButtonClicked() {
     }
 
     ui->statusBar->showMessage("[删除顾客信息失败] 无法删除该行记录");
+    message = "提交删除失败（Failed to delete customer record: " + m_customerModel->lastError().text() + "）";
+    LogManager::getInstance().log(Log::DATABASE, Log::WARNING, message);
 }
 
 void MainWindow::onCTExportButtonClicked() {
@@ -384,6 +395,19 @@ void MainWindow::onCTExportButtonClicked() {
                                                     tr("Excel 文件 (*.xlsx);;所有文件 (*.*)"));
     if (!fileName.isEmpty()) {
         exportToExcel(ui->customersTableView, fileName);
+        ui->statusBar->showMessage("[导出为 Excel 文件成功] 保存路径为：" + fileName);
+    } else {
+        ui->statusBar->showMessage("[导出为 Excel 文件失败] 没有选择保存路径", 5000);
+    }
+}
+
+void MainWindow::onDAExportButtonClicked() {
+    QString fileName = QFileDialog::getSaveFileName(this,
+                                                    tr("保存文件"),
+                                                    "",
+                                                    tr("Excel 文件 (*.xlsx);;所有文件 (*.*)"));
+    if (!fileName.isEmpty()) {
+        exportToExcel(ui->dailyTableView, fileName);
         ui->statusBar->showMessage("[导出为 Excel 文件成功] 保存路径为：" + fileName);
     } else {
         ui->statusBar->showMessage("[导出为 Excel 文件失败] 没有选择保存路径", 5000);
@@ -432,6 +456,21 @@ void MainWindow::exportToExcel(QTableView *tableView, const QString &filePath) {
     xlsx.saveAs(filePath);
 }
 
+void MainWindow::dailySalesSum() {
+    int targetColumn = 1;
+    double sum = 0.0;
+
+    QModelIndexList indexList = ui->dailyTableView->selectionModel()->selectedIndexes();
+    for (const QModelIndex &index : indexList) {
+        if (index.column() == targetColumn) {
+            double value = index.data().toDouble();
+            sum += value;
+        }
+    }
+
+    ui->statusBar->showMessage(QString("选中行和：%1").arg(sum));
+}
+
 
 void MainWindow::selectConsumption(const QString &condition) {
     if (!condition.isEmpty()) {
@@ -470,7 +509,7 @@ void MainWindow::refreshConsumptionTableView() {
         ui->consumptionTableView->setSortingEnabled(true);
         ui->consumptionTableView->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
     } else {
-        message = "消费表无法正常显示（Table consumptons cannot display correctly: " + m_consumptionModel->lastError().text() + "）";
+        message = "消费记录表无法正常显示（Table consumptons cannot display correctly: " + m_consumptionModel->lastError().text() + "）";
         LogManager::getInstance().log(Log::APPLICATION, Log::ERROR, message);
     }
 }
@@ -498,6 +537,21 @@ void MainWindow::refreshCustomerTableView() {
         LogManager::getInstance().log(Log::APPLICATION, Log::ERROR, message);
     }
 
+}
+
+void MainWindow::refreshDailyTableView() {
+    if (m_dailyModel->select()) {
+        ui->dailyTableView->setModel(m_dailyModel);
+        m_dailyModel->setHeaderData(0, Qt::Horizontal, "日期");
+        m_dailyModel->setHeaderData(1, Qt::Horizontal, "经营额（元）");
+        m_dailyModel->setHeaderData(2, Qt::Horizontal, "完成消费次数");
+
+        ui->dailyTableView->setSortingEnabled(true);
+        ui->dailyTableView->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+    } else {
+        message = "每日流水视图无法正常显示（View daily_sales_view cannot display correctly: " + m_dailyModel->lastError().text() + "）";
+        LogManager::getInstance().log(Log::APPLICATION, Log::ERROR, message);
+    }
 }
 
 

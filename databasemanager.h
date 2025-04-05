@@ -51,8 +51,7 @@ public:
     bool updateCP(QVariantMap &data);
 
 signals:
-    void consumptionDataChanged();
-    void customerDataChanged();
+    void dataChanged();
 
 private:
     QString                                     message;

@@ -1,5 +1,6 @@
 <RCC>
     <qresource prefix="/">
         <file>schema.json</file>
+        <file>Iconshock-Vista-General-House.ico</file>
     </qresource>
 </RCC>

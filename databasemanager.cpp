@@ -151,18 +151,18 @@ QString DatabaseManager::isNewCustomer(const QString &name) {
 bool DatabaseManager::insertCP(QVariantMap &data) {
     QSqlQuery query;
     query.prepare("SELECT customer_id FROM customers WHERE name = :name");
-    query.bindValue(":name", data["name"]);
+    query.bindValue(":name", data["name"].toString());
     query.exec();
     if (query.next()) {
         data["customer_id"] = query.value("customer_id").toString();
     } else {
         query.prepare("INSERT INTO customers (name) VALUES (:name)");
-        query.bindValue(":name", data["name"]);
+        query.bindValue(":name", data["name"].toString());
         query.exec();
         query.finish();
 
         query.prepare("SELECT customer_id FROM customers WHERE name = :name");
-        query.bindValue(":name", data["name"]);
+        query.bindValue(":name", data["name"].toString());
         query.exec();
         if (query.next()) {
             data["customer_id"] = query.value("customer_id").toString();
@@ -171,10 +171,10 @@ bool DatabaseManager::insertCP(QVariantMap &data) {
     query.finish();
 
     query.prepare("INSERT INTO consumptions (customer_id, service, amount, note) VALUES (?, ?, ?, ?)");
-    query.addBindValue(data["customer_id"]);
-    query.addBindValue(data["service"]);
-    query.addBindValue(data["amount"]);
-    query.addBindValue(data["note"]);
+    query.addBindValue(data["customer_id"].toString());
+    query.addBindValue(data["service"].toString());
+    query.addBindValue(data["amount"].toString());
+    query.addBindValue(data["note"].toString());
 
     if (!query.exec()) {
         message = "插入新消费记录失败（Failed to insert a new consumption record: " +
@@ -193,7 +193,7 @@ bool DatabaseManager::insertCP(QVariantMap &data) {
 bool DatabaseManager::updateCP(QVariantMap &data) {
     QSqlQuery query;
     query.prepare("SELECT customer_id FROM customers WHERE name = :name");
-    query.bindValue(":name", data["name"]);
+    query.bindValue(":name", data["name"].toString());
     query.exec();
     if (query.next()) {
         data["customer_id"] = query.value("customer_id").toString();
@@ -224,7 +224,7 @@ bool DatabaseManager::updateCP(QVariantMap &data) {
     }
 
     query.prepare("UPDATE consumptions SET " + updateFields.join(", ") + " WHERE consumption_id = :consumption_id");
-    query.bindValue(":consumption_id", data["consumption_id"]);
+    query.bindValue(":consumption_id", data["consumption_id"].toString());
     for (auto key : updateValues.keys()) {
         query.bindValue(":" + key, updateValues[key]);
     }
@@ -245,7 +245,7 @@ bool DatabaseManager::updateCP(QVariantMap &data) {
 bool DatabaseManager::insertCT(QVariantMap &data) {
     QSqlQuery query;
     query.prepare("SELECT * FROM customers WHERE name = :name");
-    query.bindValue(":name", data["name"]);
+    query.bindValue(":name", data["name"].toString());
     query.exec();
     if (query.next()) {
         return false;
@@ -253,11 +253,11 @@ bool DatabaseManager::insertCT(QVariantMap &data) {
     query.finish();
 
     query.prepare("INSERT INTO customers (name, gender, birthday, phone, note) VALUES (?, ?, ?, ?, ?)");
-    query.addBindValue(data["name"]);
-    query.addBindValue(data["gender"]);
-    query.addBindValue(data["birthday"]);
-    query.addBindValue(data["phone"]);
-    query.addBindValue(data["note"]);
+    query.addBindValue(data["name"].toString());
+    query.addBindValue(data["gender"].toString());
+    query.addBindValue(data["birthday"].toString());
+    query.addBindValue(data["phone"].toString());
+    query.addBindValue(data["note"].toString());
 
     if (!query.exec()) {
         message = "插入新顾客记录失败（Failed to insert a new consumption record: " +
@@ -298,7 +298,7 @@ bool DatabaseManager::updateCT(QVariantMap &data) {
     QSqlQuery query;
     QVariantMap originData;
     query.prepare("SELECT customer_id, name, gender, birthday, phone, note FROM customers WHERE customer_id = :customer_id");
-    query.bindValue(":customer_id", data["customer_id"]);
+    query.bindValue(":customer_id", data["customer_id"].toString());
     query.exec();
     if (query.next()) {
         originData["customer_id"] = query.value("customer_id").toString();
@@ -320,7 +320,7 @@ bool DatabaseManager::updateCT(QVariantMap &data) {
     }
 
     query.prepare("UPDATE customers SET " + updateFields.join(", ") + " WHERE customer_id = :customer_id");
-    query.bindValue(":customer_id", data["customer_id"]);
+    query.bindValue(":customer_id", data["customer_id"].toString());
     for (auto key : updateValues.keys()) {
         query.bindValue(":" + key, updateValues[key]);
     }

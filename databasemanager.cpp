@@ -80,6 +80,19 @@ bool DatabaseManager::selectAllService(QComboBox *combobox) {
 }
 
 
+// 检查顾客名是已经存在
+bool DatabaseManager::isCustomerExists(const QString &name) {
+    QSqlQuery query;
+    query.prepare("SELECT * FROM customers WHERE name = :name");
+    query.bindValue(":name", name);
+    query.exec();
+    if (!query.next()) {
+        return false;
+    }
+    return true;
+}
+
+
 // 获取下一条新顾客信息的 ID，但是不会进行插入
 QString DatabaseManager::getNewCustomerID() {
     QString newID;
@@ -279,6 +292,51 @@ bool DatabaseManager::insertCTByIDAndName(const QString &customerID, const QStri
         return false;
     }
     m_db.commit();
+    return true;
+}
+
+
+bool DatabaseManager::updateCT(QVariantMap &data) {
+    QSqlQuery query;
+    QVariantMap originData;
+    query.prepare("SELECT customer_id, name, gender, birthday, phone, note FROM customers WHERE customer_id = :customer_id");
+    query.bindValue(":customer_id", data["customer_id"]);
+    query.exec();
+    if (query.next()) {
+        originData["customer_id"] = query.value("customer_id").toString();
+        originData["name"] = query.value("name").toString();
+        originData["gender"] = query.value("gender").toString();
+        originData["birthday"] = query.value("birthday").toString();
+        originData["phone"] = query.value("phone").toString();
+        originData["note"] = query.value("note").toString();
+    }
+    query.finish();
+
+    QStringList updateFields;
+    QVariantMap updateValues;
+    for(auto key : originData.keys()) {
+        if (originData[key] != data[key]) {
+            updateFields.append(QString("%1 = :%1").arg(key));
+            updateValues[key] = data[key];
+        }
+    }
+
+    query.prepare("UPDATE customers SET " + updateFields.join(", ") + " WHERE customer_id = :customer_id");
+    query.bindValue(":customer_id", data["customer_id"]);
+    for (auto key : updateValues.keys()) {
+        query.bindValue(":" + key, updateValues[key]);
+    }
+
+    if (!query.exec()) {
+        message = "更新顾客信息失败（Failed to update consumption record: " +
+                  query.lastError().text() + "）" +
+                  query.lastQuery();
+        LogManager::getInstance().log(Log::DATABASE, Log::WARNING, message);
+        return false;
+    }
+
+    emit consumptionDataChanged();
+    emit customerDataChanged();
     return true;
 }
 

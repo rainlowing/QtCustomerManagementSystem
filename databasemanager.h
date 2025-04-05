@@ -38,10 +38,12 @@ public:
     QSqlDatabase& getDB();
     bool selectAllName(QComboBox *);
     bool selectAllService(QComboBox *);
+    bool isCustomerExists(const QString &name);
 
     QString getNewCustomerID();
     bool insertCT(QVariantMap &data);
     bool insertCTByIDAndName(const QString &customerID, const QString& name);
+    bool updateCT(QVariantMap &data);
 
     QString getNewConsumptionID();
     bool insertCP(QVariantMap &data);

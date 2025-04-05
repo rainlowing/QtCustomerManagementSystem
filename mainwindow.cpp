@@ -31,12 +31,8 @@ void MainWindow::connects() {
     connect(ui->ct_addButton, &QPushButton::clicked, this, &MainWindow::onCTAddButtonClicked);
 
     connect(ui->ct_searchButton, &QPushButton::clicked, this, &MainWindow::onCTSearchButtonClicked);
-    // connect(ui->cp_deleteButton, &QPushButton::clicked, this, &MainWindow::onCPDeleteButtonClicked);
-    // connect(ui->cp_searchButton, &QPushButton::clicked, this, &MainWindow::onCPSearchButtonClicked);
-    // connect(ui->ct_addButton, &QPushButton::clicked, this, &MainWindow::onCTAddButtonClicked);
-    // connect(ui->ct_updateButton, &QPushButton::clicked, this, &MainWindow::onCTUpdateButtonClicked);
-    // connect(ui->ct_deleteButton, &QPushButton::clicked, this, &MainWindow::onCTDeleteButtonClicked);
-    // connect(ui->ct_searchButton, &QPushButton::clicked, this, &MainWindow::onCTSearchButtonClicked)
+
+    connect(ui->ct_updateButton, &QPushButton::clicked, this, &MainWindow::onCTUpdateButtonClicked);
 
     connect(m_dbManager, &DatabaseManager::consumptionDataChanged, this, &MainWindow::refreshConsumptionTableView);
     connect(m_dbManager, &DatabaseManager::customerDataChanged, this, &MainWindow::refreshCustomerTableView);
@@ -138,7 +134,7 @@ void MainWindow::onCPUpdateButtonClicked() {
 
     int row = ui->consumptionTableView->selectionModel()->currentIndex().row();
     if (row == -1) {
-        ui->statusBar->showMessage("修改消费信息前，请先选中任意一行记录或单元格", 5000);
+        ui->statusBar->showMessage("修改消费记录前，请先选中任意一行记录或单元格", 5000);
         return;
     }
 
@@ -165,6 +161,9 @@ void MainWindow::handleCodeFromUpdateConsumption(int code) {
         break;
     case 100:
         ui->statusBar->showMessage("[修改消费记录失败] 顾客姓名项为空，或金额项小于零", 5000);
+        break;
+    case 101:
+        ui->statusBar->showMessage("[修改消费记录失败] 数据库中没有对应姓名的顾客数据", 5000);
         break;
     case 200:
         ui->statusBar->showMessage("[修改消费记录失败] 数据库新增操作出现错误，详情信息请查看日志", 5000);
@@ -270,6 +269,55 @@ void MainWindow::handleCodeFromAddCustomer(int code) {
         break;
     }
 }
+
+void MainWindow::onCTUpdateButtonClicked() {
+    if (!m_updateCustomer) {
+        m_updateCustomer = new UpdateCustomer(m_dbManager, this);
+        connect(m_updateCustomer, &UpdateCustomer::returnCode, this, &MainWindow::handleCodeFromUpdateCustomer);
+    }
+
+    int row = ui->customersTableView->selectionModel()->currentIndex().row();
+    if (row == -1) {
+        ui->statusBar->showMessage("修改顾客信息前，请先选中任意一行记录或单元格", 5000);
+        return;
+    }
+
+    QVariantMap data;
+    data["customer_id"] = m_customerModel->record(row).value(1).toString();
+    data["name"] = m_customerModel->record(row).value(2).toString();
+    data["gender"] = m_customerModel->record(row).value(3).toString();
+    data["birthday"] = m_customerModel->record(row).value(4).toString();
+    data["phone"] = m_customerModel->record(row).value(5).toString();
+    data["note"] = m_customerModel->record(row).value(9).toString();
+    m_updateCustomer->setBaseInfo(data);
+
+    closeAllCTForm();
+    ui->customerViewTab->layout()->addWidget(m_updateCustomer);
+}
+
+
+void MainWindow::handleCodeFromUpdateCustomer(int code) {
+    switch (code) {
+    case 0:
+        ui->statusBar->showMessage("[修改顾客信息成功] 已更新数据", 5000);
+        break;
+    case 1:
+        ui->statusBar->showMessage("[修改顾客信息成功] 没有需要更新的数据", 5000);
+        break;
+    case 100:
+        ui->statusBar->showMessage("[修改顾客信息失败] 顾客姓名项为空", 5000);
+        break;
+    case 101:
+        ui->statusBar->showMessage("[修改顾客信息失败] 更新后的姓名在数据库中已存在", 5000);
+        break;
+    case 200:
+        ui->statusBar->showMessage("[修改顾客信息失败] 数据库新增操作出现错误，详情信息请查看日志", 5000);
+        break;
+    default:
+        break;
+    }
+}
+
 
 void MainWindow::onCTSearchButtonClicked() {
     if (!m_searchCustomer) {

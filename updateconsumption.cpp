@@ -12,7 +12,6 @@ UpdateConsumption::UpdateConsumption(DatabaseManager *dbManager, QWidget *parent
 
     connect(ui->btnConfirm, &QPushButton::clicked, this, &UpdateConsumption::handleDialogAccepted);
     connect(ui->btnCancel, &QPushButton::clicked, this, &UpdateConsumption::handleDialogRejected);
-
 }
 
 
@@ -48,13 +47,20 @@ void UpdateConsumption::handleDialogAccepted() {
         return;
     }
 
+    QString name = ui->nameCombo->currentText();
+    if (!m_dbManager->isCustomerExists(name)) {
+        emit returnCode(101);
+        return;
+    }
+
     QVariantMap data;
     data["consumption_id"] = ui->IDLabel->text();
-    data["name"] = ui->nameCombo->currentText();
+    data["name"] = name;
     data["service"] = ui->serviceCombo->currentText();
     data["amount"] = ui->amountEdit->text();
     data["note"] = ui->notePlain->toPlainText();
 
+    m_data.remove("time");
     if (m_data == data) {
         emit returnCode(1);
         return;

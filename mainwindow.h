@@ -27,6 +27,7 @@
 #include "updateconsumption.h"
 #include "searchcomsumption.h"
 #include "addnewcustomer.h"
+#include "updatecustomer.h"
 #include "searchcustomer.h"
 
 QT_BEGIN_NAMESPACE
@@ -72,6 +73,9 @@ private slots:
     void onCTAddButtonClicked();
     void handleCodeFromAddCustomer(int code);
 
+    void onCTUpdateButtonClicked();
+    void handleCodeFromUpdateCustomer(int code);
+
     void onCTSearchButtonClicked();
     void handleCodeFromSearchCustomer(int code);
 
@@ -98,6 +102,7 @@ private:
     UpdateConsumption                               *m_updateConsumption = nullptr;
     SearchComsumption                               *m_searchConsumption = nullptr;
     AddNewCustomer                                  *m_addNewCustomer    = nullptr;
+    UpdateCustomer                                  *m_updateCustomer    = nullptr;
     SearchCustomer                                  *m_searchCustomer    = nullptr;
 };
 #endif // MAINWINDOW_H

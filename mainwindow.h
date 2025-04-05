@@ -79,6 +79,8 @@ private slots:
     void onCTSearchButtonClicked();
     void handleCodeFromSearchCustomer(int code);
 
+    void onCTDeleteButtonClicked();
+
     void onCTExportButtonClicked();
 
     void selectConsumption(const QString &condition);

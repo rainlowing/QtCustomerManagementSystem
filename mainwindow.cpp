@@ -34,6 +34,8 @@ void MainWindow::connects() {
 
     connect(ui->ct_updateButton, &QPushButton::clicked, this, &MainWindow::onCTUpdateButtonClicked);
 
+    connect(ui->ct_deleteButton, &QPushButton::clicked, this, &MainWindow::onCTDeleteButtonClicked);
+
     connect(m_dbManager, &DatabaseManager::consumptionDataChanged, this, &MainWindow::refreshConsumptionTableView);
     connect(m_dbManager, &DatabaseManager::customerDataChanged, this, &MainWindow::refreshCustomerTableView);
 }
@@ -206,7 +208,7 @@ void MainWindow::handleCodeFromSearchConsumption(int code) {
 void MainWindow::onCPDeleteButtonClicked() {
     int row = ui->consumptionTableView->selectionModel()->currentIndex().row();
     if (row == -1) {
-        ui->statusBar->showMessage("删除消费信息前，请先选中任意一行记录或单元格", 5000);
+        ui->statusBar->showMessage("删除消费记录前，请先选中任意一行记录或单元格", 5000);
         return;
     }
 
@@ -218,7 +220,7 @@ void MainWindow::onCPDeleteButtonClicked() {
         if (m_consumptionModel->submitAll()) {
             refreshConsumptionTableView();
             refreshCustomerTableView();
-            ui->statusBar->showMessage("[删除消费记录成功] 已删除消费记录并刷新");
+            ui->statusBar->showMessage("[删除消费记录成功] 已删除该行消费记录并刷新");
         } else {
             ui->statusBar->showMessage("[删除消费记录失败] 提交删除失败");
             message = "提交删除失败（Failed to delete consumption record: " + m_consumptionModel->lastError().text() + "）";
@@ -228,7 +230,7 @@ void MainWindow::onCPDeleteButtonClicked() {
         return;
     }
 
-    ui->statusBar->showMessage("[删除消费记录失败] 无法删除改行记录");
+    ui->statusBar->showMessage("[删除消费记录失败] 无法删除该行记录");
 }
 
 void MainWindow::onCPExportButtonClicked() {
@@ -345,6 +347,34 @@ void MainWindow::handleCodeFromSearchCustomer(int code) {
     default:
         break;
     }
+}
+
+void MainWindow::onCTDeleteButtonClicked() {
+    int row = ui->customersTableView->selectionModel()->currentIndex().row();
+    if (row == -1) {
+        ui->statusBar->showMessage("删除顾客信息前，请先选中任意一行记录或单元格", 5000);
+        return;
+    }
+
+    if (QMessageBox::question(this, "确认删除", "确定要删除选中的行吗？该顾客的消费记录也会一并删除，且此操作不可撤回。", QMessageBox::Yes | QMessageBox::No) != QMessageBox::Yes) {
+        return;
+    }
+
+    if (m_customerModel->removeRow(row)) {
+        if (m_customerModel->submitAll()) {
+            refreshConsumptionTableView();
+            refreshCustomerTableView();
+            ui->statusBar->showMessage("[删除顾客信息成功] 已删除该行顾客信息并刷新");
+        } else {
+            ui->statusBar->showMessage("[删除顾客信息失败] 提交删除失败");
+            message = "提交删除失败（Failed to delete consumption record: " + m_customerModel->lastError().text() + "）";
+            LogManager::getInstance().log(Log::DATABASE, Log::WARNING, message);
+            m_customerModel->revertAll();
+        }
+        return;
+    }
+
+    ui->statusBar->showMessage("[删除顾客信息失败] 无法删除该行记录");
 }
 
 void MainWindow::onCTExportButtonClicked() {

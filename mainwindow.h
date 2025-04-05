@@ -26,6 +26,8 @@
 #include "addnewconsumption.h"
 #include "updateconsumption.h"
 #include "searchcomsumption.h"
+#include "addnewcustomer.h"
+#include "searchcustomer.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -46,7 +48,8 @@ private:
     void initManagers();
     void initTimer();
     void setTables();
-    void closeAllCPFrom();
+    void closeAllCPForm();
+    void closeAllCTForm();
 
 private slots:
     void onQuitButtonClicked();
@@ -66,9 +69,16 @@ private slots:
 
     void onCPExportButtonClicked();
 
+    void onCTAddButtonClicked();
+    void handleCodeFromAddCustomer(int code);
+
+    void onCTSearchButtonClicked();
+    void handleCodeFromSearchCustomer(int code);
+
     void onCTExportButtonClicked();
 
     void selectConsumption(const QString &condition);
+    void selectCustomer(const QString &condition);
     void refreshConsumptionTableView();
     void refreshCustomerTableView();
     void exportToExcel(QTableView *tableView, const QString &filePath);
@@ -86,6 +96,8 @@ private:
     // 表单界面指针
     AddNewConsumption                               *m_addNewConsumption = nullptr;
     UpdateConsumption                               *m_updateConsumption = nullptr;
-    SearchComsumption                               *m_SearchConsumption = nullptr;
+    SearchComsumption                               *m_searchConsumption = nullptr;
+    AddNewCustomer                                  *m_addNewCustomer    = nullptr;
+    SearchCustomer                                  *m_searchCustomer    = nullptr;
 };
 #endif // MAINWINDOW_H

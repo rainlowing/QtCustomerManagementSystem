@@ -27,6 +27,10 @@ void MainWindow::connects() {
     connect(ui->cp_deleteButton, &QPushButton::clicked, this, &MainWindow::onCPDeleteButtonClicked);
 
     connect(ui->cp_exportButton, &QPushButton::clicked, this, &MainWindow::onCPExportButtonClicked);
+
+    connect(ui->ct_addButton, &QPushButton::clicked, this, &MainWindow::onCTAddButtonClicked);
+
+    connect(ui->ct_searchButton, &QPushButton::clicked, this, &MainWindow::onCTSearchButtonClicked);
     // connect(ui->cp_deleteButton, &QPushButton::clicked, this, &MainWindow::onCPDeleteButtonClicked);
     // connect(ui->cp_searchButton, &QPushButton::clicked, this, &MainWindow::onCPSearchButtonClicked);
     // connect(ui->ct_addButton, &QPushButton::clicked, this, &MainWindow::onCTAddButtonClicked);
@@ -75,10 +79,15 @@ void MainWindow::setTables() {
 }
 
 
-void MainWindow::closeAllCPFrom() {
+void MainWindow::closeAllCPForm() {
     if (m_addNewConsumption) m_addNewConsumption->close();
     if (m_updateConsumption) m_updateConsumption->close();
-    if (m_SearchConsumption) m_SearchConsumption->close();
+    if (m_searchConsumption) m_searchConsumption->close();
+}
+
+void MainWindow::closeAllCTForm() {
+    if (m_addNewCustomer) m_addNewCustomer->close();
+    if (m_searchCustomer) m_searchCustomer->close();
 }
 
 
@@ -98,7 +107,7 @@ void MainWindow::onCPAddButtonClicked() {
         connect(m_addNewConsumption, &AddNewConsumption::returnCode, this, &MainWindow::handleCodeFromAddConsumption);
     }
 
-    closeAllCPFrom();
+    closeAllCPForm();
     ui->consumptionViewTab->layout()->addWidget(m_addNewConsumption);
     m_addNewConsumption->setBaseInfo();
 }
@@ -142,7 +151,7 @@ void MainWindow::onCPUpdateButtonClicked() {
     data["note"] = m_consumptionModel->record(row).value(7).toString();
     m_updateConsumption->setBaseInfo(data);
 
-    closeAllCPFrom();
+    closeAllCPForm();
     ui->consumptionViewTab->layout()->addWidget(m_updateConsumption);
 }
 
@@ -167,15 +176,15 @@ void MainWindow::handleCodeFromUpdateConsumption(int code) {
 
 
 void MainWindow::onCPSearchButtonClicked() {
-    if (!m_SearchConsumption) {
-        m_SearchConsumption = new SearchComsumption(m_dbManager, this);
-        connect(m_SearchConsumption, &SearchComsumption::returnCode, this, &MainWindow::handleCodeFromSearchConsumption);
-        connect(m_SearchConsumption, &SearchComsumption::selectConsumption, this, &MainWindow::selectConsumption);
+    if (!m_searchConsumption) {
+        m_searchConsumption = new SearchComsumption(m_dbManager, this);
+        connect(m_searchConsumption, &SearchComsumption::returnCode, this, &MainWindow::handleCodeFromSearchConsumption);
+        connect(m_searchConsumption, &SearchComsumption::selectConsumption, this, &MainWindow::selectConsumption);
     }
 
-    closeAllCPFrom();
-    ui->consumptionViewTab->layout()->addWidget(m_SearchConsumption);
-    m_SearchConsumption->setBaseInfo();
+    closeAllCPForm();
+    ui->consumptionViewTab->layout()->addWidget(m_searchConsumption);
+    m_searchConsumption->setBaseInfo();
 }
 
 
@@ -233,6 +242,60 @@ void MainWindow::onCPExportButtonClicked() {
         ui->statusBar->showMessage("[导出为 Excel 文件成功] 保存路径为：" + fileName);
     } else {
         ui->statusBar->showMessage("[导出为 Excel 文件失败] 没有选择保存路径", 5000);
+    }
+}
+
+void MainWindow::onCTAddButtonClicked() {
+    if (!m_addNewCustomer) {
+        m_addNewCustomer = new AddNewCustomer(m_dbManager, this);
+        connect(m_addNewCustomer, &AddNewCustomer::returnCode, this, &MainWindow::handleCodeFromAddCustomer);
+    }
+
+    closeAllCTForm();
+    ui->customerViewTab->layout()->addWidget(m_addNewCustomer);
+    m_addNewCustomer->setBaseInfo();
+}
+
+void MainWindow::handleCodeFromAddCustomer(int code) {
+    switch (code) {
+    case 0:
+        ui->statusBar->showMessage("[新增顾客信息成功] 已更新数据", 5000);
+        break;
+    case 100:
+        ui->statusBar->showMessage("[新增顾客信息失败] 姓名不能为空", 5000);
+        break;
+    case 200:
+        ui->statusBar->showMessage("[新增顾客信息失败] 数据库新增操作出现错误，请检查是否出现同名顾客，详情信息请查看日志", 5000);
+    default:
+        break;
+    }
+}
+
+void MainWindow::onCTSearchButtonClicked() {
+    if (!m_searchCustomer) {
+        m_searchCustomer = new SearchCustomer(m_dbManager, this);
+        connect(m_searchCustomer, &SearchCustomer::returnCode, this, &MainWindow::handleCodeFromSearchCustomer);
+        connect(m_searchCustomer, &SearchCustomer::selectCustomer, this, &MainWindow::selectCustomer);
+    }
+
+    closeAllCTForm();
+    ui->customerViewTab->layout()->addWidget(m_searchCustomer);
+    m_searchCustomer->setBaseInfo();
+}
+
+void MainWindow::handleCodeFromSearchCustomer(int code) {
+    switch (code) {
+    case 0:
+        ui->statusBar->showMessage("[搜索顾客信息成功] 已得到数据", 5000);
+        break;
+    case 1:
+        ui->statusBar->showMessage("[搜索顾客信息提示] 已清空筛选", 5000);
+        break;
+    case 100:
+        ui->statusBar->showMessage("[搜索消顾客信息失败] 筛选条件为空或不符合正确格式", 5000);
+        break;
+    default:
+        break;
     }
 }
 
@@ -294,13 +357,22 @@ void MainWindow::exportToExcel(QTableView *tableView, const QString &filePath) {
 
 void MainWindow::selectConsumption(const QString &condition) {
     if (!condition.isEmpty()) {
-        qDebug() << condition;
         m_consumptionModel->setFilter(condition);
     } else {
         m_consumptionModel->setFilter("");
     }
 
     refreshConsumptionTableView();
+}
+
+void MainWindow::selectCustomer(const QString &condition) {
+    if (!condition.isEmpty()) {
+        m_customerModel->setFilter(condition);
+    } else {
+        m_customerModel->setFilter("");
+    }
+
+    refreshCustomerTableView();
 }
 
 

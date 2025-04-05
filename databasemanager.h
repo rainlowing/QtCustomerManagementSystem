@@ -39,7 +39,9 @@ public:
     bool selectAllName(QComboBox *);
     bool selectAllService(QComboBox *);
 
-    bool insertCT(const QString &, const QString &);
+    QString getNewCustomerID();
+    bool insertCT(QVariantMap &data);
+    bool insertCTByIDAndName(const QString &customerID, const QString& name);
 
     QString getNewConsumptionID();
     bool insertCP(QVariantMap &data);

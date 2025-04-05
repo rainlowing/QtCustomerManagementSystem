@@ -109,7 +109,7 @@
           <item>
            <widget class="QPushButton" name="cp_searchButton">
             <property name="text">
-             <string>搜索</string>
+             <string>查询</string>
             </property>
            </widget>
           </item>
@@ -194,6 +194,47 @@
           </item>
           <item>
            <widget class="QPushButton" name="ct_exportButton">
+            <property name="text">
+             <string>导出为 Excel</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="dailyViewTab">
+       <attribute name="title">
+        <string>每日流水</string>
+       </attribute>
+       <layout class="QGridLayout" name="gridLayout_4">
+        <item row="0" column="0">
+         <widget class="QTableView" name="dailyTableView"/>
+        </item>
+        <item row="1" column="0">
+         <layout class="QHBoxLayout" name="horizontalLayout_4">
+          <item>
+           <spacer name="horizontalSpacer_5">
+            <property name="orientation">
+             <enum>Qt::Orientation::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>40</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item>
+           <widget class="QPushButton" name="da_searchButton">
+            <property name="text">
+             <string>查询</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="pushButton">
             <property name="text">
              <string>导出为 Excel</string>
             </property>

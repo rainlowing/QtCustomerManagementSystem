@@ -12,29 +12,38 @@ include(./QXlsx/QXlsx.pri)
 
 SOURCES += \
     addnewconsumption.cpp \
+    addnewcustomer.cpp \
     databasemanager.cpp \
     logmanager.cpp \
     main.cpp \
     mainwindow.cpp \
     searchcomsumption.cpp \
+    searchcustomer.cpp \
     updateconsumption.cpp \
+    updatecustomer.cpp \
     utils.cpp
 
 HEADERS += \
     addnewconsumption.h \
+    addnewcustomer.h \
     databasemanager.h \
     logmanager.h \
     mainwindow.h \
     namespace.h \
     searchcomsumption.h \
+    searchcustomer.h \
     updateconsumption.h \
+    updatecustomer.h \
     utils.h
 
 FORMS += \
     addnewconsumption.ui \
+    addnewcustomer.ui \
     mainwindow.ui \
     searchcomsumption.ui \
-    updateconsumption.ui
+    searchcustomer.ui \
+    updateconsumption.ui \
+    updatecustomer.ui
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin

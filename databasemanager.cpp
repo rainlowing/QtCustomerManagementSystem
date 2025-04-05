@@ -80,6 +80,31 @@ bool DatabaseManager::selectAllService(QComboBox *combobox) {
 }
 
 
+// 获取下一条新顾客信息的 ID，但是不会进行插入
+QString DatabaseManager::getNewCustomerID() {
+    QString newID;
+
+    QSqlQuery query;
+    query.prepare("SELECT MAX(customer_id) FROM customers");
+
+    if (query.exec()) {
+        if (query.next()) {
+            int idCounter = query.value(0).toString().mid(1).toInt();
+            newID = QString("U%1").arg(idCounter + 1, 6, 10, QLatin1Char('0'));
+        } else {
+            newID = "U000001";
+        }
+    } else {
+        message = "SQL 查询语句失败（Failed to exec select query: " +
+                  query.lastError().text() + "）" + query.lastQuery();
+        LogManager::getInstance().log(Log::DATABASE, Log::ERROR, message);
+    }
+
+    return newID;
+}
+
+
+// 根据姓名查询是否为新顾客，返回新顾客的 ID，但是不会进行插入
 QString DatabaseManager::isNewCustomer(const QString &name) {
     QString customerID;
 
@@ -99,7 +124,7 @@ QString DatabaseManager::isNewCustomer(const QString &name) {
             int maxID = queryA.value(0).toInt();
             int newID = (maxID > 0) ? maxID + 1 : 1;
             customerID = QString("%1").arg(newID, 6, 10, QLatin1Char('0'));
-            insertCT(customerID, name);
+            insertCTByIDAndName(customerID, name);
         } else {
             customerID = "000001";
         }
@@ -107,20 +132,6 @@ QString DatabaseManager::isNewCustomer(const QString &name) {
 
     return customerID;
 }
-
-
-// // 根据 consumption_id 查询消费记录
-// QVariantMap DatabaseManager::selectByConsumptionID(const QString &consumption_id) {
-//     QVariantMap data;
-
-//     QSqlQuery query;
-//     query.prepare("SELECT ("") FROM consumptions WHERE consumption_id = :consumption_id");
-//     query.bindValue(":consumption_id", consumption_id);
-//     query.exec();
-//     if (query.next()) {
-
-//     }
-// }
 
 
 // 插入一条新消费记录，如果是新顾客则先插入一条简易的新顾客信息
@@ -220,7 +231,36 @@ bool DatabaseManager::updateCP(QVariantMap &data) {
 }
 
 
-bool DatabaseManager::insertCT(const QString &customerID, const QString& name) {
+bool DatabaseManager::insertCT(QVariantMap &data) {
+    QSqlQuery query;
+    query.prepare("SELECT * FROM customers WHERE name = :name");
+    query.bindValue(":name", data["name"]);
+    query.exec();
+    if (query.next()) {
+        return false;
+    }
+    query.finish();
+
+    query.prepare("INSERT INTO customers (name, gender, birthday, phone, note) VALUES (?, ?, ?, ?, ?)");
+    query.addBindValue(data["name"]);
+    query.addBindValue(data["gender"]);
+    query.addBindValue(data["birthday"]);
+    query.addBindValue(data["phone"]);
+    query.addBindValue(data["note"]);
+
+    if (!query.exec()) {
+        message = "插入新顾客记录失败（Failed to insert a new consumption record: " +
+                  query.lastError().text() + "）" +
+                  query.lastQuery();
+        LogManager::getInstance().log(Log::DATABASE, Log::WARNING, message);
+        return false;
+    }
+
+    emit customerDataChanged();
+    return true;
+}
+
+bool DatabaseManager::insertCTByIDAndName(const QString &customerID, const QString &name) {
     m_db.transaction();
     QSqlQuery insertSql;
     insertSql.prepare("INSERT INTO customers "

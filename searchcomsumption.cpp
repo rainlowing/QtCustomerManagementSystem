@@ -86,8 +86,8 @@ void SearchComsumption::handleDialogAccepted() {
         m_data["end_time"] = ui->endTime->date().toString("yyyy-MM-dd");
     }
 
-
     QStringList selectFields;
+
     if (!m_data["name"].toString().isEmpty()) {
             selectFields.append("name = '" + m_data["name"].toString() + "'");
     }
@@ -141,7 +141,6 @@ void SearchComsumption::handleDialogCleared() {
 
 void SearchComsumption::handleDialogRejected() {
     emit selectConsumption("");
-    emit returnCode(1);
     this->close();
 }
 

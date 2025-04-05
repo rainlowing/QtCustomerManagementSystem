@@ -53,6 +53,7 @@ void AddNewConsumption::handleDialogAccepted() {
 
     if (m_dbManager->insertCP(m_data)) {
         emit returnCode(0);
+        this->close();
     } else {
         emit returnCode(200);
     }
